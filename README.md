@@ -44,7 +44,7 @@ The body of the POST request is a JSON-encoded object:
 ```json
 {
     "cols": [0],
-    "args": ['abc','def']
+    "args": ["abc","def"]
 }
 ```
 
