@@ -1,0 +1,311 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "building label cleaning server"
+    },
+    "host": "localhost:5000",
+    "basePath": "/",
+    "schemes": [
+        "http"
+    ],
+    "paths": {
+        "apply/{fileid}/{ruleid}": {
+            "post": {
+                "summary": "apply rule to file",
+                "operationId": "apply",
+                "produces": ["application/json"],
+                "parameters": [
+                    {
+                        "name": "fileid",
+                        "in": "path",
+                        "description": "ID of file to operate on",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "ruleid",
+                        "in": "path",
+                        "description": "ID of rule to apply to file",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "returns fileid of altered file",
+                        "schema": {
+                            "$ref": "#/definitions/FileIdentifier"
+                        }
+                    }
+                }
+            }
+        },
+        "/rule/{ruleid}": {
+            "get": {
+                "summary": "get rule by ID",
+                "operationId": "getRule",
+                "produces": ["application/json"],
+                "parameters": [
+                    {
+                        "name": "ruleid",
+                        "in": "path",
+                        "description": "ID of rule to return",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "$ref": "#/definitions/Rule"
+                        }
+                    }
+                }
+            }
+        },
+        "/rule/{templateid}": {
+            "post": {
+                "summary": "Instantiate rule",
+                "operationId": "createRule",
+                "consumes": ["application/json"],
+                "produces": ["application/json"],
+                "parameters": [
+                    {
+                        "name": "templateid",
+                        "in": "path",
+                        "description": "ID of template to instantiate",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "description": "file contents",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Rule"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "$ref": "#/definitions/RuleIdentifier"
+                        }
+                    }
+                }
+            }
+        },
+        "/rule": {
+            "get": {
+                "summary": "list rule IDs",
+                "operationId": "listRules",
+                "consumes": ["application/json"],
+                "produces": ["application/json"],
+                "responses": {
+                    "200": {
+                        "description": "successful",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/template/{templateid}": {
+            "get": {
+                "summary": "get template by ID",
+                "operationId": "getTemplate",
+                "produces": ["application/json"],
+                "parameters": [
+                    {
+                        "name": "templateid",
+                        "in": "path",
+                        "description": "ID of template to return",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "$ref": "#/definitions/Template"
+                        }
+                    }
+                }
+            }
+        },
+        "/template": {
+            "get": {
+                "summary": "list template IDs",
+                "operationId": "listTemplates",
+                "consumes": ["application/json"],
+                "produces": ["application/json"],
+                "responses": {
+                    "200": {
+                        "description": "successful",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/file/{fileid}": {
+            "get": {
+                "summary": "get file by ID",
+                "operationId": "getFile",
+                "produces": ["application/json"],
+                "parameters": [
+                    {
+                        "name": "fileid",
+                        "in": "path",
+                        "description": "ID of file to return",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "$ref": "#/definitions/File"
+                        }
+                    }
+                }
+            }
+        },
+        "/file": {
+            "get": {
+                "summary": "list file IDs",
+                "operationId": "listFiles",
+                "consumes": ["application/json"],
+                "produces": ["application/json"],
+                "responses": {
+                    "200": {
+                        "description": "successful",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "summary": "add new file",
+                "operationId": "addFile",
+                "consumes": ["application/json"],
+                "produces": ["application/json"],
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "description": "file contents",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/File"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successful",
+                        "schema": {
+                            "$ref": "#/definitions/FileIdentifier"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "FileIdentifier": {
+            "type": "object",
+            "properties": {
+                "fileid": {
+                    "type": "string"
+                }
+            }
+        },
+        "TemplateIdentifier": {
+            "type": "object",
+            "properties": {
+                "templateid": {
+                    "type": "string"
+                }
+            }
+        },
+        "RuleIdentifier": {
+            "type": "object",
+            "properties": {
+                "ruleid": {
+                    "type": "string"
+                }
+            }
+        },
+        "File": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "contents": {
+                    "type": "array",
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "applied": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "Template": {
+            "type": "object",
+            "properties": {
+                "args": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "filename": {
+                    "type": "string"
+                }
+            }
+        },
+        "Rule": {
+            "type": "object",
+            "properties": {
+                "cols": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer",
+                        "format": "int64"
+                    }
+                },
+                "args": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    }
+}
