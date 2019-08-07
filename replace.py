@@ -1,4 +1,4 @@
 def rule(arg1, arg2):
-    def rule(inp):
+    def impl(inp):
         return inp.replace(arg1, arg2)
-    return rule
+    return impl
