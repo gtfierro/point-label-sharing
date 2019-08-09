@@ -44,12 +44,12 @@ class App extends Component {
             console.log(results.data);
             const csvFileName = csvFilePath.substring(csvFilePath.lastIndexOf("/") + 1);
 
-            this.props.createFile({
-              fileContents: {
-                name: csvFileName,
-                contents: this.convertCSVTo2DArray(this.state.csvData)
-              }
-            });
+            // this.props.createFile({
+            //   fileContents: {
+            //     name: csvFileName,
+            //     contents: this.convertCSVTo2DArray(this.state.csvData)
+            //   }
+            // });
           }
       }
     });

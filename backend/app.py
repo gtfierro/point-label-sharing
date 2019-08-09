@@ -71,7 +71,28 @@ class database:
         except:
             self.obj = {
                 'files': {},
-                'templates': {},
+                'templates': {
+                    "replace": {
+                        "args": 2,
+                        "filename": "replace"
+                    },
+                    "trim": {
+                        "args": 2,
+                        "filename": "trim"
+                    },
+                    "remove": {
+                        "args": 1,
+                        "filename": "remove"
+                    },
+                    "split": {
+                        "args": 2,
+                        "filename": "split"
+                    },
+                    "regex_match": {
+                        "args": 1,
+                        "filename": "regex_match"
+                    }
+                },
                 'rules': {},
             }
 
@@ -185,7 +206,11 @@ def applyrule(fileid, ruleid):
     new_contents = []
     for row in content['contents']:
         for col in ruledef['cols']:
-            row[col] = ruleinst(row[col])
+            try:
+                row[col] = ruleinst(row[col])
+            except Exception as e:
+                print(e)
+                pass
         new_contents.append(row)
 
     new_file = {

@@ -5,7 +5,7 @@ d1 = {
     "name": "test1",
     "contents": [
         ["col1","col2"],
-        ["abc", "val2"]
+        ["abcdefg.5678.re3", "val2"]
     ]
 }
 
@@ -25,14 +25,55 @@ print(f"template list: {template_list}")
 rule_list = requests.get('http://localhost:5000/rule').json()
 print(f"rule list: {rule_list}")
 
-# instantiate rule
-rule_stuff = {
-    'cols': [0],
-    'args': ['abc','replaced']
-}
-resp = requests.post('http://localhost:5000/rule/replace', data=json.dumps(rule_stuff)).json()
-ruleid=resp['ruleid']
-print(f"ruleid: {ruleid}")
+# #Replace
+# # instantiate rule
+# rule_stuff = {
+#     'cols': [0],
+#     'args': [False, 'abc','replaced']
+# }
+# resp = requests.post('http://localhost:5000/rule/replace', data=json.dumps(rule_stuff)).json()
+# ruleid=resp['ruleid']
+# print(f"ruleid: {ruleid}")
+
+# #Trim
+# # instantiate rule
+# rule_stuff = {
+#     'cols': [0],
+#     'args': ["l", 5]
+# }
+# resp = requests.post('http://localhost:5000/rule/trim', data=json.dumps(rule_stuff)).json()
+# ruleid=resp['ruleid']
+# print(f"ruleid: {ruleid}")
+
+# #Split
+# # instantiate rule
+# rule_stuff = {
+#     'cols': [0],
+#     'args': [".", 2]
+# }
+# resp = requests.post('http://localhost:5000/rule/split', data=json.dumps(rule_stuff)).json()
+# ruleid=resp['ruleid']
+# print(f"ruleid: {ruleid}")
+
+# #Remove
+# # instantiate rule
+# rule_stuff = {
+#     'cols': [0],
+#     'args': ["."]
+# }
+# resp = requests.post('http://localhost:5000/rule/remove', data=json.dumps(rule_stuff)).json()
+# ruleid=resp['ruleid']
+# print(f"ruleid: {ruleid}")
+
+# #Regex Match (Doesn't work yet)
+# # instantiate rule
+# rule_stuff = {
+#     'cols': [0],
+#     'args': ["\s"]
+# }
+# resp = requests.post('http://localhost:5000/rule/regex_match', data=json.dumps(rule_stuff)).json()
+# ruleid=resp['ruleid']
+# print(f"ruleid: {ruleid}")
 
 ruledef = requests.get(f'http://localhost:5000/rule/{ruleid}').json()
 print(f"got defined rule: {ruledef}")
