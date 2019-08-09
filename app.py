@@ -1,6 +1,6 @@
 from flask import Flask
 from flask import jsonify, send_from_directory
-from flask import request
+from flask import request, redirect
 from flask import current_app
 from flask import make_response
 from flask import render_template
@@ -221,6 +221,15 @@ def applyrule(fileid, ruleid):
     new_file['applied'].append(ruleid)
     newfileid = db.add('files', new_file)
     return jsonify({'fileid': newfileid})
+
+@app.route('/')
+def index():
+    return redirect('/index.html')
+
+@app.route('/<filename>')
+@crossdomain(origin='*')
+def home(filename):
+    return send_from_directory('static', filename)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0',debug=True)
