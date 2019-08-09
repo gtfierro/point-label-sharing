@@ -1,0 +1,53 @@
+KING.AHU.AH01.HWP1_2.Enable
+KING.AHU.AH01.Mixed Air Damper Position
+KING.AHU.AH01.Mixed Air Temp
+KING.AHU.AH01.Outside Air Temp
+KING.AHU.AH01.P6.Enable
+KING.AHU.AH01.RAF1.Enable
+KING.AHU.AH01.RAF1.Status
+KING.AHU.AH01.RAF2.Enable
+KING.AHU.AH01.RAF2.Status
+KING.AHU.AH01.Return Air Temp
+KING.AHU.AH01.SAF1.Status
+KING.AHU.AH01.SAF2.Status
+KING.AHU.AH01.Supply Air Temp
+KING.AHU.AH01.Supply Air Temp Setpoint
+KING.AHU.AHU01.1stFloor.Zone Air Temp
+KING.AHU.AHU01.1stFloorMezz.Zone Air Temp
+KING.AHU.AHU01.2ndFloor.Zone Air Temp
+KING.AHU.AHU01.2ndFloorMezz.Zone Air Temp
+KING.AHU.AHU01.AVG.Zone Air Temp
+KING.AHU.AHU01.BasementZt1.Zone Air Temp
+KING.AHU.AHU01.BasementZt1Mezz.Zone Air Temp
+KING.AHU.AHU01.Mixed Air Damper Position
+KING.AHU.AHU01.Mixed Air Temp
+KING.AHU.AHU01.Outside Air Temp
+KING.AHU.AHU01.Return Air Temp
+KING.AHU.AHU01.RF.Status
+KING.AHU.AHU01.Run Status
+KING.AHU.AHU01.Run Status Sum
+KING.AHU.AHU01.SF.Status
+KING.AHU.AHU01.Supply Air Temp
+KING.AHU.AHU01.Supply Air Temp Setpoint
+KING.AHU.AHU02.1stFloor.Zone Air Temp
+KING.AHU.AHU02.1stFloorMezz.Zone Air Temp
+KING.AHU.AHU02.2ndFloor.Zone Air Temp
+KING.AHU.AHU02.2ndFloorMezz.Zone Air Temp
+KING.AHU.AHU02.AVG.Zone Air Temp
+KING.AHU.AHU02.BasementZt1.Zone Air Temp
+KING.AHU.AHU02.BasementZt1Mezz.Zone Air Temp
+KING.AHU.AHU02.Mixed Air Damper Position
+KING.AHU.AHU02.Mixed Air Temp
+KING.AHU.AHU02.Outside Air Temp
+KING.AHU.AHU02.Return Air Temp
+KING.AHU.AHU02.RF.Status
+KING.AHU.AHU02.Run Status
+KING.AHU.AHU02.Run Status Sum
+KING.AHU.AHU02.SF.Status
+KING.AHU.AHU02.Supply Air Temp
+KING.AHU.AHU02.Supply Air Temp Setpoint
+KING.CONDENSATE.PRESS
+KING.HW.Hot Water Supply Temp
+KING.RoofAHU.CHW.PUMP01.Status
+KING.RoofAHU.HWP1.Status
+KING.STEAM.PRESS

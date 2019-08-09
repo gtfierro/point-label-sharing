@@ -1,0 +1,10 @@
+export const GET_RULE = 'get_rule';
+export const GET_ALL_RULES = 'get_all_rules';
+export const APPLY_RULE = 'apply_rule';
+export const GET_TEMPLATE = 'get_template';
+export const GET_ALL_TEMPLATES = 'get_all_templates';
+export const GET_FILE = 'get_file';
+export const GET_ALL_FILES = 'get_all_files';
+export const CREATE_TEMPLATE = 'create_template';
+export const CREATE_FILE = 'create_file';
+export const THROW_ERROR = 'throw_error';

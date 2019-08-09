@@ -16,6 +16,7 @@ app = Flask(__name__, static_url_path='/static')
 def crossdomain(origin=None, methods=None, headers=None,
                 max_age=21600, attach_to_all=True,
                 automatic_options=True):
+            
     if methods is not None:
         methods = ', '.join(sorted(x.upper() for x in methods))
     if headers is not None and not isinstance(headers, str):
@@ -34,6 +35,7 @@ def crossdomain(origin=None, methods=None, headers=None,
 
     def decorator(f):
         def wrapped_function(*args, **kwargs):
+
             if automatic_options and request.method == 'OPTIONS':
                 resp = current_app.make_default_options_response()
             else:
@@ -42,7 +44,7 @@ def crossdomain(origin=None, methods=None, headers=None,
                 return resp
 
             h = resp.headers
-
+            
             h['Access-Control-Allow-Origin'] = origin
             h['Access-Control-Allow-Methods'] = get_methods()
             h['Access-Control-Max-Age'] = str(max_age)

@@ -1,0 +1,21 @@
+AOB4.2P.CHANGEOVER
+AOB4.CHW.Bridge Level Bypass Flow
+AOB4.CHW.Building Chilled Water Return Temp
+AOB4.CHW.Building Chilled Water Supply Temp
+AOB4.CHW.Building Chilled Water Supply Temp Setpoint
+AOB4.CHW.DIVERTING
+AOB4.CHW.ECONOMIZER
+AOB4.CHW.Loop Chilled Water Supply Temp
+AOB4.CHW.Outside Air Temp
+AOB4.CHW.PUMP1.CALL
+AOB4.CHW.PUMP1.Start Stop
+AOB4.CLGSP
+AOB4.HHW.Building Hot Water Supply Temp
+AOB4.HHW.HWSP
+AOB4.HHW.Outside Air Temp
+AOB4.HHW.PUMP1.CALL
+AOB4.HHW.STMVLV
+AOB4.HTGSP
+AOB4.MAIN.Outside Air Temp
+AOB4.Mode
+AOB4.OATAVG
