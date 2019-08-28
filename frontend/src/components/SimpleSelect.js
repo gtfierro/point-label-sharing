@@ -27,13 +27,15 @@ const useStyles = makeStyles(theme => ({
 
 const SimpleSelect = (props) => {
   const classes = useStyles();
-  const { csvFileNames } = props;
+  const { csvFileNames, importFile } = props;
   const [values, setValues] = React.useState({
     fileName: csvFileNames[0],
     name: csvFileNames[0],
   });
 
   function handleChange(event) {
+    importFile(event.target.value);
+
     setValues(oldValues => ({
       ...oldValues,
       fileName: event.target.value,

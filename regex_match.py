@@ -2,7 +2,7 @@ import re
 
 def rule(reg_expr):
     def impl(inp):
-        match = re.search("%r"%reg_expr, inp)
+        match = re.search(reg_expr, inp)
         if match:
             return match.group()
         else:

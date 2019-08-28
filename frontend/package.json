@@ -10,6 +10,7 @@
     "express": "^4.17.1",
     "fs": "0.0.1-security",
     "http-proxy-middleware": "^0.19.1",
+    "lodash": "^4.17.15",
     "pandas-js": "^0.2.4",
     "papaparse": "^5.0.1",
     "react": "^16.8.6",

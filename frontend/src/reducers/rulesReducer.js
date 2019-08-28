@@ -1,21 +1,23 @@
 import {
     GET_RULE,
+    GET_ALL_RULE_IDS,
     GET_ALL_RULES,
+    CREATE_RULE,
     APPLY_RULE
 } from '../actions/types';
 
 const INITIAL_STATE = {
     ruleIds: null,
-    rule: null,
+    rules: null,
     response: null
 };
 
 export default function (state=INITIAL_STATE, action) {
     switch (action.type) {
+        case GET_ALL_RULE_IDS:
         case GET_ALL_RULES:
-            return { ...state, ...action.payload };
         case GET_RULE:
-            return { ...state, ...action.payload };
+        case CREATE_RULE:
         case APPLY_RULE:
             return { ...state, ...action.payload };
         default:

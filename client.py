@@ -35,15 +35,15 @@ print(f"rule list: {rule_list}")
 # ruleid=resp['ruleid']
 # print(f"ruleid: {ruleid}")
 
-# #Trim
-# # instantiate rule
-# rule_stuff = {
-#     'cols': [0],
-#     'args': ["l", 5]
-# }
-# resp = requests.post('http://localhost:5000/rule/trim', data=json.dumps(rule_stuff)).json()
-# ruleid=resp['ruleid']
-# print(f"ruleid: {ruleid}")
+#Trim
+# instantiate rule
+rule_stuff = {
+    'cols': [0],
+    'args': [1, 5]
+}
+resp = requests.post('http://localhost:5000/rule/trim', data=json.dumps(rule_stuff)).json()
+ruleid=resp['ruleid']
+print(f"ruleid: {ruleid}")
 
 # #Split
 # # instantiate rule

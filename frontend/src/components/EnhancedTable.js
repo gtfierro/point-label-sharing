@@ -20,12 +20,13 @@ import Tooltip from '@material-ui/core/Tooltip';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Switch from '@material-ui/core/Switch';
 import DeleteIcon from '@material-ui/icons/Delete';
-import FilterListIcon from '@material-ui/icons/FilterList';
-import StrikethroughSIcon from '@material-ui/icons/StrikethroughS';
+import CheckCircleOutlineIcon from '@material-ui/icons/CheckCircleOutline';
+import CheckCircleIcon from '@material-ui/icons/CheckCircle';
 import Button from '@material-ui/core/Button';
-import Papa from 'papaparse';
-import { CSVLink, CSVDownload } from "react-csv";
+import { CSVLink } from "react-csv";
 import SimpleSelect from './SimpleSelect';
+import { importAll } from '../helper';
+const datasets = importAll(require.context('../datasets/davis'));
 
 function desc(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) {
@@ -52,11 +53,10 @@ function getSorting(order, orderBy) {
 }
 
 function EnhancedTableHead(props) {
-  const { classes, onSelectAllClick, order, orderBy, numSelected, rowCount, onRequestSort, csvData } = props;
+  const { classes, onSelectAllClick, order, orderBy, numSelected, rowCount, onRequestSort, csvData, onColSelected, selectedCols } = props;
   const createSortHandler = property => event => {
     onRequestSort(event, property);
   };
-
   const header = Object.keys(csvData[0]).map(columnName => {
 
     let numeric = true;
@@ -73,6 +73,10 @@ function EnhancedTableHead(props) {
     };
   });
 
+  function handleColSelected(event, index) {
+    onColSelected(index);
+  }
+
   return (
     <TableHead>
       <TableRow>
@@ -84,7 +88,7 @@ function EnhancedTableHead(props) {
             inputProps={{ 'aria-label': 'select all rows' }}
           />
         </TableCell>
-        {header.map(row => (
+        {header.map((row, index) => (
 
           <TableCell
             key={row.id}
@@ -103,6 +107,13 @@ function EnhancedTableHead(props) {
                   {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
                 </span>
               ) : null}
+            </TableSortLabel>
+            <TableSortLabel
+              active={true}
+              direction='desc'
+              IconComponent={selectedCols[index] ? CheckCircleIcon : CheckCircleOutlineIcon}
+              onClick={event  => handleColSelected(event, index)}
+            >
             </TableSortLabel>
           </TableCell>
         ))}
@@ -149,9 +160,10 @@ const useToolbarStyles = makeStyles(theme => ({
 
 const EnhancedTableToolbar = props => {
   const classes = useToolbarStyles();
-  const { numSelected, csvName, rows } = props;
 
-  const csvFileNames = ['ACAD.csv', 'AMRL.csv', 'AOB4.csv', 'AQUA.csv', 'ARC.csv', 'ART.csv', 'ARTX.csv', 'ASMUN.csv', 'BIXB.csv', 'BRIG.csv', 'BWFP.csv', 'Bainer.csv', 'C113.csv', 'CHEM.csv', 'CHEMX.csv', 'CONT.csv', 'COWL.csv', 'CRUS.csv', 'CURR.csv', 'DH.csv', 'EPS.csv', 'FDPD.csv', 'GBSF.csv', 'GHA_ICS.csv', 'GIEDT.csv', 'GILM.csv', 'HART.csv', 'HICK.csv', 'HUNT.csv', 'HUTCH.csv', 'HWC.csv', 'JUNGER.csv', 'KERR.csv', 'KING.csv', 'KLEIBER.csv', 'LFH.csv', 'LSA.csv', 'MADDY.csv', 'MANN.csv', 'MATH.csv', 'MEYR.csv', 'MIWF.csv', 'MRAK.csv', 'MSB.csv', 'MSC.csv', 'MSD.csv', 'MU.csv', 'MUSIC.csv', 'OLS.csv', 'PES_ICS.csv', 'PHSL.csv', 'PINE.csv', 'PRB.csv', 'RECH.csv', 'ROES.csv', 'RPL.csv', 'RYER.csv', 'SCC.csv', 'SCHM.csv', 'SEQU.csv', 'SHIELDS.csv', 'SLAB.csv', 'SLEC.csv', 'SMOA.csv', 'SOCS.csv', 'SPRL.csv', 'STOR.csv', 'SURGE3.csv', 'SWL.csv', 'TAPS.csv', 'THOR.csv', 'THUR.csv', 'TUPP.csv', 'VEIH.csv', 'VM2.csv', 'VM3A.csv', 'VM3B.csv', 'VMEP.csv', 'VMIF.csv', 'VMLF.csv', 'VMTH.csv', 'VMTHB.csv', 'VMTHC.csv', 'WELL.csv', 'WICK.csv', 'WSRC.csv', 'YOUNG.csv']
+  const { numSelected, rows, importFile } = props;
+
+  const csvFileNames = Object.keys(datasets)
 
   return (
     <Toolbar
@@ -166,7 +178,7 @@ const EnhancedTableToolbar = props => {
           </Typography>
         ) : (
           <Typography variant="h6" id="tableTitle">
-            <SimpleSelect csvFileNames={csvFileNames} />
+            <SimpleSelect csvFileNames={csvFileNames} importFile={importFile} />
           </Typography>
         )}
       </div>
@@ -219,10 +231,13 @@ const useStyles = makeStyles(theme => ({
     top: 20,
     width: 1,
   },
+  tableCellSelected: {
+    backgroundColor: "#f7f7f7"
+  }
 }));
 
 const EnhancedTable  = (props) => {
-  const { csvData, csvName } = props;
+  const { csvData, csvName, importFile, onSelectedCol } = props;
   let rows = csvData;
   const classes = useStyles();
   const [order, setOrder] = React.useState('asc');
@@ -231,7 +246,11 @@ const EnhancedTable  = (props) => {
   const [page, setPage] = React.useState(0);
   const [dense, setDense] = React.useState(false);
   const [rowsPerPage, setRowsPerPage] = React.useState(25);
-
+  let colMap = {};
+  Object.keys(rows[0]).forEach((key, index) => {
+    colMap[index] = false;
+  });
+  const [selectedCols, setSelectedCols] = React.useState(colMap)
   function handleRequestSort(event, property) {
     const isDesc = orderBy === property && order === 'desc';
     setOrder(isDesc ? 'asc' : 'desc');
@@ -280,6 +299,12 @@ const EnhancedTable  = (props) => {
     setDense(event.target.checked);
   }
 
+  function handleColSelected(colIndex) {
+    const newSelectedCols = { ...selectedCols, [colIndex]: !selectedCols[colIndex] }
+    onSelectedCol(newSelectedCols);
+    setSelectedCols(newSelectedCols);
+  }
+
   const isSelected = name => selected.indexOf(name) !== -1;
 
   const emptyRows = rowsPerPage - Math.min(rowsPerPage, rows.length - page * rowsPerPage);
@@ -291,7 +316,7 @@ const EnhancedTable  = (props) => {
   return (
     <div className={classes.root}>
       <Paper className={classes.paper}>
-        <EnhancedTableToolbar csvName={csvName} rows={rows} numSelected={selected.length} />
+        <EnhancedTableToolbar csvName={csvName} rows={rows} importFile={importFile} numSelected={selected.length} />
         <div className={classes.tableWrapper}>
           <Table
             className={classes.table}
@@ -307,13 +332,15 @@ const EnhancedTable  = (props) => {
               onRequestSort={handleRequestSort}
               rowCount={rows.length}
               csvData={csvData}
+              onColSelected={handleColSelected}
+              selectedCols={selectedCols}
             />
             <TableBody>
               {rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((row, index) => {
                   const isItemSelected = isSelected(row.name);
                   const labelId = `enhanced-table-checkbox-${index}`;
-
+                 
                   return (
                     <TableRow
                       hover
@@ -332,9 +359,9 @@ const EnhancedTable  = (props) => {
                       </TableCell>
                       { Object.keys(row).map((key, index) => {
                         if (index === 0) {
-                          return <TableCell key={key} align="left">{row[key]}</TableCell>;
+                          return <TableCell key={key} align="left" className={selectedCols[index] ? classes.tableCellSelected : ""}>{row[key]}</TableCell>;
                         } else {
-                          return <TableCell key={key} align="right">{row.calories}</TableCell>;
+                          return <TableCell key={key} align="right" className={selectedCols[index] ? classes.tableCellSelected : ""}>{row.calories}</TableCell>;
                         }
                       })}
                     </TableRow>

@@ -1,6 +1,4 @@
 import React from 'react';
-import { connect } from 'react-redux';
-import * as actions from '../actions';
 import clsx from 'clsx';
 import { makeStyles, useTheme } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
@@ -26,6 +24,8 @@ import FilterListIcon from '@material-ui/icons/FilterList';
 import CloudDownloadIcon from '@material-ui/icons/CloudDownload';
 import SendIcon from '@material-ui/icons/Send';
 import Tooltip from '@material-ui/core/Tooltip';
+import { TrimDialogContent, ReplaceDialogContent, SplitDialogContent, RegexDialogContent, RemoveDialogContent, FilterDialogContent } from  "./Dialogs";
+import EnhancedTable from './EnhancedTable';
 
 const drawerWidth = 240;
 
@@ -93,8 +93,12 @@ const useStyles = makeStyles(theme => ({
 const MiniDrawer = (props) => {
   const classes = useStyles();
   const theme = useTheme();
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = React.useState(true);
+  const [action, setAction] = React.useState("");
   const iconList = [<StrikethroughSIcon />, <FindReplaceIcon />, <HorizontalSplitIcon />, <LinearScaleIcon />, <RemoveCircleIcon />, <FilterListIcon />];
+  const [selectedCols, setSelectedCols] = React.useState([]);
+  const [appliedRule, setAppliedRule] = React.useState(false);
+  const { csvData, csvName, importFile, appliedRules } = props;
 
   function handleDrawerOpen() {
     setOpen(true);
@@ -104,8 +108,60 @@ const MiniDrawer = (props) => {
     setOpen(false);
   }
 
+  function sliceData(data, rows, cols) {
+    let result = [];
+    let headerRow = [];
+    rows.forEach(rowIdx => {
+      let row = [];
+      cols.forEach(colIdx => {
+        const colName = Object.keys(data[0])[colIdx];
+        if (!headerRow.includes(colName)) {
+          headerRow.push(colName);
+        }
+        row.push(data[rowIdx][colName]);
+      });
+      result.push(row);
+    });
+    result.unshift(headerRow);
+    return result;
+  }
+
+  function renderDialogByAction() {
+
+    console.log(action);
+
+    const previewData = sliceData(csvData, [0, 1], selectedCols);
+
+    switch(action) {
+      case "Trim":
+        return <TrimDialogContent open={true} title={action} handleClose={() => setAction("")} handleAddRule={() => setAppliedRule(true)} selectedCols={selectedCols} previewData={previewData} />;
+      case "Find and Replace":
+        return <ReplaceDialogContent open={true} title={action} handleClose={() => setAction("")} handleAddRule={(action) => alert(action)} selectedCols={selectedCols} previewData={previewData} />;
+      case "Split":
+        return <SplitDialogContent open={true} title={action} handleClose={() => setAction("")} handleAddRule={(action) => alert(action)} selectedCols={selectedCols} previewData={previewData} />;
+      case "Regex":
+        return <RegexDialogContent open={true} title={action} handleClose={() => setAction("")} handleAddRule={(action) => alert(action)} selectedCols={selectedCols} previewData={previewData} />;
+      case "Remove":
+        return <RemoveDialogContent open={true} title={action} handleClose={() => setAction("")} handleAddRule={(action) => alert(action)} selectedCols={selectedCols} previewData={previewData} />;
+      default:
+        return "";
+    }
+  }
+
+  function handleSelectedCol(colsSelected) {
+    var selectedIndexes = [];
+    Object.keys(colsSelected).forEach(key => {
+      if (colsSelected[key]) {
+        selectedIndexes.push(parseInt(key));
+      }
+    });
+
+    setSelectedCols(selectedIndexes);
+  }
+
   return (
     <div className={classes.root}>
+      {renderDialogByAction()}
       <CssBaseline />
       <AppBar
         position="fixed"
@@ -152,19 +208,19 @@ const MiniDrawer = (props) => {
         </div>
         <Divider />
         <List>
-          {["Trim", "Find and Replace", "Split", "Regex", "Remove", "Filter By"].map((action, index) => (
-            <Tooltip title={action} placement="right">
-              <ListItem button onClick={() => alert("HI")} key={index}>
+          {["Trim", "Find and Replace", "Split", "Regex", "Remove"].map((action, index) => (
+            <Tooltip key={index} title={action} placement="right">
+              <ListItem button onClick={() => setAction(action)} key={index}>
                 <ListItemIcon>{iconList[index]}</ListItemIcon>
                 <ListItemText primary={action} />
               </ListItem>
             </Tooltip>
-          ))}
+          ), this)}
         </List>
         <Divider />
         <List>
           {['Download', "Submit"].map((action, index) => (
-            <Tooltip title={action} placement="right">
+            <Tooltip key={index} title={action} placement="right">
               <ListItem button key={action}>
                 <ListItemIcon>{index % 2 === 0 ? <CloudDownloadIcon /> : <SendIcon />}</ListItemIcon>
                 <ListItemText primary={action} />
@@ -172,17 +228,26 @@ const MiniDrawer = (props) => {
             </Tooltip>
           ))}
         </List>
+        <Divider />
+        <List>
+          {appliedRules.map((rule, index) => (
+            <Tooltip key={index} title={action} placement="right">
+              <ListItem button key={action}>
+                <ListItemIcon>{index % 2 === 0 ? <CloudDownloadIcon /> : <SendIcon />}</ListItemIcon>
+                <ListItemText primary={rule.template} />
+              </ListItem>
+            </Tooltip>
+          ))}
+        </List>
       </Drawer>
       <main className={classes.content}>
         <div className={classes.toolbar} />
-        {props.content}
+        <EnhancedTable csvData={csvData} csvName={csvName} importFile={importFile} onSelectedCol={handleSelectedCol} />
       </main>
     </div>
   );
+
+
 }
 
-const mapStateToProps = ({ files }) => {
-  return { files };
-}
-
-export default connect(mapStateToProps, actions)(MiniDrawer);
+export default MiniDrawer;
