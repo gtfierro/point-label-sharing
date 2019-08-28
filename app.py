@@ -11,7 +11,7 @@ import random
 import importlib
 import json
 
-app = Flask(__name__, static_url_path='/static')
+app = Flask(__name__, static_url_path='/static', static_folder='static/static')
 
 def crossdomain(origin=None, methods=None, headers=None,
                 max_age=21600, attach_to_all=True,
@@ -224,12 +224,12 @@ def applyrule(fileid, ruleid):
 
 @app.route('/')
 def index():
-    return redirect('/index.html')
+    return send_from_directory('frontend/build', 'index.html')
 
-@app.route('/<filename>')
-@crossdomain(origin='*')
-def home(filename):
-    return send_from_directory('static', filename)
+#@app.route('/<filename>')
+#@crossdomain(origin='*')
+#def home(filename):
+#    return send_from_directory('frontend/build', filename)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0',debug=True)
