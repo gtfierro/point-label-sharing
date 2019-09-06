@@ -7,7 +7,7 @@ import {
     convertCSVTo2DArray,
     importAll
 } from '../helper';
-const datasets = importAll(require.context('../datasets/random'));
+const datasets = importAll(require.context('../datasets/davis'));
 
 class Dashboard extends Component {
     constructor(props) {
@@ -22,7 +22,7 @@ class Dashboard extends Component {
     }
 
     componentDidMount() {
-        //this.uploadDatasetsToDB();
+        this.uploadDatasetsToDB();
     }
 
     render() {
@@ -35,7 +35,7 @@ class Dashboard extends Component {
     }
 
     uploadDatasetsToDB() {
-        for(const dsName of Object.keys(datasets)) {
+        for(const dsName of Object.keys(datasets).slice(1, 6)) {
             if (dsName) {
                 this.getCSVData(datasets[dsName], (csvData) => {
                     this.props.createFile({
