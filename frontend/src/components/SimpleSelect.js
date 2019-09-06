@@ -2,12 +2,8 @@ import React from 'react';
 import { connect } from 'react-redux';
 import * as actions from '../actions';
 import { makeStyles } from '@material-ui/core/styles';
-import Input from '@material-ui/core/Input';
-import OutlinedInput from '@material-ui/core/OutlinedInput';
-import FilledInput from '@material-ui/core/FilledInput';
 import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
-import FormHelperText from '@material-ui/core/FormHelperText';
 import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
 
@@ -27,14 +23,30 @@ const useStyles = makeStyles(theme => ({
 
 const SimpleSelect = (props) => {
   const classes = useStyles();
-  const { csvFileNames, importFile } = props;
+  const { importFileFromDB, getAllFiles, files } = props;
+
+  if (!files.files) {
+    getAllFiles({
+      appliedRules: true
+    });
+  }
+
+  let fileName = "";
+  
+  if (files.files && Object.keys(files.files).length > 0) {
+    fileName = files.files[Object.keys(files.files)[0]]["name"];
+  }
+ 
   const [values, setValues] = React.useState({
-    fileName: csvFileNames[0],
-    name: csvFileNames[0],
+    fileName
   });
 
+  if (!files || !files.files) {
+    return <div></div>;
+  }
+
   function handleChange(event) {
-    importFile(event.target.value);
+    importFileFromDB(event.target.value);
 
     setValues(oldValues => ({
       ...oldValues,
@@ -54,8 +66,8 @@ const SimpleSelect = (props) => {
             id: 'csv-file-names',
           }}
         >
-        {csvFileNames.map((name, index) => {
-             return <MenuItem key={index} value={name}>{name}</MenuItem>;
+        {Object.keys(files.files).map((fileId, index) => {
+             return <MenuItem key={index} value={fileId}>{files.files[fileId]["name"]}</MenuItem>;
         })}
         </Select>
       </FormControl>

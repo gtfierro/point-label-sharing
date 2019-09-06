@@ -8,7 +8,7 @@ import {
 
 const ROOT_URL = "http://localhost:5000";
 
-export const getAllFileIds = () => async (dispatch) => {
+export const getAllFileIds = () => async (dispatch, getState) => {
     const res = await axios.get(` ${ROOT_URL}/file`);
 
     console.log(res.data);
@@ -20,22 +20,26 @@ export const getAllFileIds = () => async (dispatch) => {
             response: res.statusText
         }
     });
+
+    return Promise.resolve(getState());
 };
 
-export const getAllFiles = () => async (dispatch) => {
-    const res = await axios.get(` ${ROOT_URL}/file`);
+export const getAllFiles = ({ appliedRules }) => async (dispatch, getState) => {
+    const res = await axios.get(` ${ROOT_URL}/file?appliedRules=${appliedRules}`);
 
     console.log(res.data);
 
-    let files = [];
+    let files = {};
 
     if (res.data) {
-        res.data.forEach(async id => {
-            const file = await axios.get(` ${ROOT_URL}/file/${id}`);
+        for (const id of res.data) {
+            const file = await axios.get(`${ROOT_URL}/file/${id}`);
             
-            files.push(file.data);
-        });
+            files[id] = file.data;
+        }
     }
+
+    console.log(files);
 
     dispatch({
         type: GET_ALL_FILES,
@@ -44,9 +48,11 @@ export const getAllFiles = () => async (dispatch) => {
             response: res.statusText
         }
     });
+
+    return Promise.resolve(getState());
 }
 
-export const getFile = ({ fileId }) => async (dispatch) => {
+export const getFile = ({ fileId }) => async (dispatch, getState) => {
     const res = await axios.get(`${ROOT_URL}/file/${fileId}`);
 
     console.log(res.data);
@@ -54,13 +60,15 @@ export const getFile = ({ fileId }) => async (dispatch) => {
     dispatch({
         type: GET_FILE,
         payload: {
-            files: [res.data],
+            file: res.data,
             response: res.statusText
         }
     });
+
+    return Promise.resolve(getState());
 };
 
-export const createFile = ({ fileContents }) => async (dispatch) => {
+export const createFile = ({ fileContents }) => async (dispatch, getState) => {
     const headers = {
             'Access-Control-Allow-Origin': "*",
             'Content-Type': 'application/json',
@@ -78,4 +86,6 @@ export const createFile = ({ fileContents }) => async (dispatch) => {
             response: res.data
         }
     });
+
+    return Promise.resolve(getState());
 };

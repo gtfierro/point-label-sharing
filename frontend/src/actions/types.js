@@ -1,7 +1,10 @@
 export const GET_RULE = 'get_rule';
 export const GET_ALL_RULE_IDS = 'get_all_rule_ids';
 export const GET_ALL_RULES = 'get_all_rules';
+export const GET_RULES_BY_FILE = 'get_rules_by_file';
 export const APPLY_RULE = 'apply_rule';
+export const DELETE_RULE = 'apply_rule';
+export const UPDATE_RULE = 'update_rule';
 export const GET_TEMPLATE = 'get_template';
 export const GET_ALL_TEMPLATES = 'get_all_templates';
 export const GET_FILE = 'get_file';

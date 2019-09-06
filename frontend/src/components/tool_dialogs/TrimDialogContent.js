@@ -1,7 +1,6 @@
 
 import React from 'react';
 import Button from '@material-ui/core/Button';
-import TextField from '@material-ui/core/TextField';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
@@ -13,34 +12,88 @@ import { connect } from 'react-redux';
 import * as actions from '../../actions';
 
 const TrimDialogContent = (props) => {
-    const { previewData, selectedCols, open, handleClose, title, handleAddRule, createRule, applyRule } = props;
-    const [trimRange, setTrimRange] = React.useState(0);
+    const { previewData, selectedCols, open, handleClose, title, handleAddRule, createRule, updateRule, applyMultipleRules, applyRule, fileId, importFileFromDB, existingData } = props;
 
-    const maxSliderValue = selectedCols.length > 0 ? Math.max(previewData[1][0].length, previewData[2][0].length) : 50;
-    console.log(previewData);
+    let lengths = [];
+
+    previewData.slice(1).forEach(row => {
+        row.forEach(val => {
+            lengths.push(val.length);
+        });
+    });
+
+    const maxSliderValue = previewData.length > 0 ? Math.max(...lengths) : 50;
+
+    let existingTrimRange = 0;
+
+    if (existingData) {
+        existingTrimRange = [existingData[0], existingData[1]];
+    }
+    const [trimRange, setTrimRange] = React.useState(existingTrimRange);
 
     function onSliderChange(range) {
         setTrimRange(range);
     }
 
     function handleApplyRule(e) {
-        createRule({
-            templateId: "trim",
-            data: {
-                'cols': selectedCols,
-                'args': [trimRange[0], maxSliderValue - trimRange[1]]
-            }
-        }).then(res => {
-            applyRule({
-                ruleId: res.rules.response.ruleid,
-                fileId: "58063"
-            }).then(() => {
-                
+        if (existingData) {
+            updateRule({
+                'templateId': "trim",
+                'ruleId': existingData.ruleId,
+                'fileId': fileId,
+                'data': {
+                    'cols': selectedCols,
+                    'args': [trimRange[0], maxSliderValue - trimRange[1]]
+                }
+            }).then(res => {
+                applyMultipleRules({
+                    ruleIds: res.rules.ruleIds,
+                    fileId: res.rules.originalFile
+                }).then(({ rules }) => {
+                    importFileFromDB(rules.response.fileId);
+                });
             });
-        });
+        } else {
+            createRule({
+                templateId: "trim",
+                data: {
+                    'cols': selectedCols,
+                    'args': [trimRange[0], maxSliderValue - trimRange[1]]
+                }
+            }).then(res => {
+                const ruleData = {
+                    ruleid: res.rules.response.ruleid,
+                    template: "trim"
+                };
+                
+                handleAddRule(ruleData);
+
+                applyRule({
+                    ruleId: res.rules.response.ruleid,
+                    fileId
+                }).then(res => {
+                    importFileFromDB(res.rules.response.fileid);
+                });
+            });
+        }
 
         handleClose();
-        handleAddRule();
+    }
+
+    function renderPreview() {
+        if (!existingData) {
+            return (
+                <div>
+                    <DialogContentText color="textPrimary" variant="h6">
+                    PREVIEW:
+
+                    </DialogContentText>
+                    { selectedCols.length > 0 ? <SimpleTable trimRange={trimRange} previewData={previewData} /> : "First, choose the columns you would like to trim characters."} 
+                </div>
+            );
+        }
+
+        return "";
     }
 
     return (
@@ -51,19 +104,15 @@ const TrimDialogContent = (props) => {
                 <DialogContentText color="textPrimary">
                 Trim the first n characters from the left and right using the slider.
                 </DialogContentText>
-                <RangeSlider minValue={0} maxValue={maxSliderValue} onSliderChange={onSliderChange} />
-                <DialogContentText color="textPrimary" variant="h6">
-                    PREVIEW:
-
-                </DialogContentText>
-                { selectedCols.length > 0 ? <SimpleTable trimRange={trimRange} previewData={previewData} /> : "First, choose the columns you would like to trim."} 
+                <RangeSlider minValue={0} maxValue={maxSliderValue} defaultValue={trimRange} onSliderChange={onSliderChange} />
+                {renderPreview()}
             </DialogContent>
             <DialogActions>
                 <Button onClick={handleClose} color="primary">
                     Cancel
                 </Button>
                 <Button onClick={handleApplyRule} color="primary">
-                    Apply Rule
+                    { existingData ? "Update Rule" : "Apply Rule" }
                 </Button>
             </DialogActions>
         </Dialog>        

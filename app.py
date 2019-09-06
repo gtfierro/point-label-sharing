@@ -10,6 +10,8 @@ import copy
 import random
 import importlib
 import json
+from subprocess import call
+import os
 
 app = Flask(__name__, static_url_path='/static', static_folder='static/static')
 
@@ -72,7 +74,7 @@ class database:
             self.obj = {
                 'files': {},
                 'templates': {
-                    "replace": {
+                    "find and replace": {
                         "args": 2,
                         "filename": "replace"
                     },
@@ -88,9 +90,9 @@ class database:
                         "args": 2,
                         "filename": "split"
                     },
-                    "regex_match": {
+                    "regex": {
                         "args": 1,
-                        "filename": "regex_match"
+                        "filename": "regex"
                     }
                 },
                 'rules': {},
@@ -100,7 +102,7 @@ class database:
         # TODO: do this automatically
 
         # example
-        self.obj['templates']['replace'] = {
+        self.obj['templates']['find and replace'] = {
             'args': 2,
             'filename': 'replace'
         }
@@ -110,6 +112,20 @@ class database:
             json.dump(self.obj, f)
 
 
+    def update(self, col, key, value):
+        """
+        Updates existing contents in the database.
+        Returns the key it was inserted under.
+        """
+        if col not in ['files','templates','rules']:
+            raise Exception("col needs to be one of files, templates, rules")
+
+        self.obj[col][key] = value
+
+        with open(self.filename, 'w') as f:
+            json.dump(self.obj, f)
+        
+        return key
 
     def add(self, col, value):
         """
@@ -140,23 +156,52 @@ class database:
             raise Exception("col needs to be one of files, templates, rules")
         r = self.obj[col].get(key, default)
         return copy.deepcopy(r) if r is not None else None
+    
+    def remove(self, col, key):
+        if col not in ['files','templates','rules']:
+            raise Exception("col needs to be one of files, templates, rules")
+        
+        if key not in self.obj[col]:
+            raise Exception("key does not exist")
+
+        del self.obj[col][key]
+
+        # save to file
+        with open(self.filename, 'w') as f:
+            json.dump(self.obj, f)
 
 db = database('db.json')
 
-@app.route('/file/<fileid>', methods=['GET'])
+@app.route('/file/<fileid>', methods=['GET', 'PUT'])
 @crossdomain(origin='*')
-def get_file(fileid):
-    return jsonify(db.get('files', fileid, {}))
+def get_or_update_file(fileid):
+    if request.method == 'GET':
+        return jsonify(db.get('files', fileid, {}))
+    else:
+        db.update("files", fileid, request.get_json(force=True))
+        return jsonify({ 'fileid': fileid })
 
 @app.route('/file', methods=['GET','POST'])
 @crossdomain(origin='*')
 def filehandler():
     if request.method == 'POST':
         # get new fileid
-        fileid = db.add('files',request.get_json(force=True))
-        return jsonify({'fileid': fileid})
+        req_json = request.get_json(force=True)
+        req_json["appliedRules"] = False
+        fileid = db.add('files',req_json)
+        return jsonify({'fileid': fileid })
     else:
-        fileids = list(db.obj['files'].keys())
+        appliedRules = request.args.get('appliedRules', False)
+        fileids = []
+        if appliedRules:
+            for fileid in db.obj['files']:
+                if "appliedRules" in db.get('files', fileid):
+                    if not db.obj['files'][fileid]['appliedRules']:
+                        fileids.append(fileid)
+                else:
+                    fileids.append(fileid)
+        else:
+            fileids = list(db.obj['files'].keys())
         return jsonify(fileids)
 
 @app.route('/template/<templateid>', methods=['GET'])
@@ -170,7 +215,7 @@ def templatehandler():
     templateids = list(db.obj['templates'].keys())
     return jsonify(templateids)
 
-@app.route('/rule/<ruleid>', methods=['GET','POST'])
+@app.route('/rule/<ruleid>', methods=['GET','POST', 'PUT'])
 @crossdomain(origin='*')
 def get_rule(ruleid):
     if request.method == 'POST':
@@ -186,8 +231,14 @@ def get_rule(ruleid):
         args['template'] = templateid
         ruleid = db.add('rules', args)
         return jsonify({'ruleid': ruleid})
-    else:
+    elif request.method == 'GET':
         return jsonify(db.get('rules', ruleid, {}))
+    else:
+        args = request.get_json(force=True)
+        fileid = args.pop('fileId', None)
+        content = db.get('files', fileid)
+        db.update("rules", ruleid, args)
+        return jsonify({ 'fileid': fileid, 'originalFile': content['originalFile'], 'ruleids': content["applied"] })
 
 @app.route('/rule', methods=['GET'])
 @crossdomain(origin='*')
@@ -198,13 +249,13 @@ def rulehandler():
 @app.route('/apply/<fileid>/<ruleid>', methods=['POST'])
 @crossdomain(origin='*')
 def applyrule(fileid, ruleid):
-    content = db.get('files',fileid)
+    content = db.get('files',fileid)        
     ruledef = db.get('rules',ruleid)
     template = db.get('templates',ruledef['template'])
     ruleinst = importlib.import_module(template['filename']).rule(*ruledef['args'])
 
     new_contents = []
-    for row in content['contents']:
+    for row in copy.deepcopy(content)["contents"][1:]:
         for col in ruledef['cols']:
             try:
                 row[col] = ruleinst(row[col])
@@ -213,23 +264,73 @@ def applyrule(fileid, ruleid):
                 pass
         new_contents.append(row)
 
+    # Skip and add header row back
+    new_contents.insert(0, content["contents"][0])
+
     new_file = {
         'name': content['name'],
         'applied': content.get('applied', []),
-        'content': new_contents
+        'contents': new_contents
     }
     new_file['applied'].append(ruleid)
-    newfileid = db.add('files', new_file)
+    if "appliedRules" in content and not content["appliedRules"]:
+        # If no rules applied yet
+        new_file["originalFile"] = fileid
+        newfileid = db.add('files', new_file)
+        content["appliedRules"] = True
+        content["appliedFile"] = newfileid
+        db.update('files', fileid, content)
+    else: 
+        if 'appliedFile' in content:
+            new_file['originalFile'] = fileid
+            newfileid = db.update('files', content['appliedFile'], new_file)
+        else:
+            new_file['originalFile'] = content["originalFile"]
+            newfileid = db.update('files', fileid, new_file)
+
     return jsonify({'fileid': newfileid})
+
+@app.route('/delete/<fileid>/<ruleid>', methods=['DELETE'])
+@crossdomain(origin='*')
+def delete_rule(fileid, ruleid):
+    content = db.get('files',fileid)
+    content["applied"].remove(ruleid)
+    original_file_id = content["originalFile"]
+    db.remove('rules', ruleid)
+    if content["applied"]:
+        updated_file = { 
+            "name": content["name"],
+            "contents": content["contents"], 
+            "applied": content["applied"],
+            "originalFile": original_file_id
+        } 
+        db.update('files', fileid, updated_file)
+        return jsonify({'fileid': fileid, 'ruleids': updated_file["applied"], 'originalFile': original_file_id})
+    else:
+        original_file_content = db.get('files', original_file_id)
+        updated_original_file = { 
+            "name": original_file_content["name"],
+            "contents": original_file_content["contents"], 
+            "appliedRules": False
+        } 
+        db.update('files', original_file_id, updated_original_file)
+        db.remove('files', fileid)
+        return jsonify({'fileid': original_file_id, 'ruleids': [], 'originalFile': original_file_id})
+
 
 @app.route('/')
 def index():
     return send_from_directory('frontend/build', 'index.html')
 
-#@app.route('/<filename>')
-#@crossdomain(origin='*')
-#def home(filename):
-#    return send_from_directory('frontend/build', filename)
+@app.route('/<filename>')
+@crossdomain(origin='*')
+def home(filename):
+   return send_from_directory('frontend/build', filename)
 
 if __name__ == '__main__':
+    owd = os.getcwd()
+    os.chdir("frontend")
+    call(["npm", "run", "build"])
+    os.chdir(owd)
+
     app.run(host='0.0.0.0',debug=True)

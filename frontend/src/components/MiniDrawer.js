@@ -1,5 +1,7 @@
 import React from 'react';
 import clsx from 'clsx';
+import { connect } from 'react-redux';
+import * as actions from '../actions';
 import { makeStyles, useTheme } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import AppBar from '@material-ui/core/AppBar';
@@ -20,12 +22,12 @@ import FindReplaceIcon from '@material-ui/icons/FindReplace';
 import HorizontalSplitIcon from '@material-ui/icons/HorizontalSplit';
 import LinearScaleIcon from '@material-ui/icons/LinearScale';
 import RemoveCircleIcon from '@material-ui/icons/RemoveCircle';
-import FilterListIcon from '@material-ui/icons/FilterList';
-import CloudDownloadIcon from '@material-ui/icons/CloudDownload';
-import SendIcon from '@material-ui/icons/Send';
+import DeleteIcon from '@material-ui/icons/Delete';
+import EditIcon from '@material-ui/icons/Edit';
 import Tooltip from '@material-ui/core/Tooltip';
-import { TrimDialogContent, ReplaceDialogContent, SplitDialogContent, RegexDialogContent, RemoveDialogContent, FilterDialogContent } from  "./Dialogs";
+import { TrimDialogContent, ReplaceDialogContent, SplitDialogContent, RegexDialogContent, RemoveDialogContent } from  "./Dialogs";
 import EnhancedTable from './EnhancedTable';
+import { sliceData } from '../helper';
 
 const drawerWidth = 240;
 
@@ -95,54 +97,33 @@ const MiniDrawer = (props) => {
   const theme = useTheme();
   const [open, setOpen] = React.useState(true);
   const [action, setAction] = React.useState("");
-  const iconList = [<StrikethroughSIcon />, <FindReplaceIcon />, <HorizontalSplitIcon />, <LinearScaleIcon />, <RemoveCircleIcon />, <FilterListIcon />];
+  const iconList = {
+    "trim": <StrikethroughSIcon />, 
+    "find and replace": <FindReplaceIcon />, 
+    "split": <HorizontalSplitIcon />,
+    "regex": <LinearScaleIcon />,
+    "remove": <RemoveCircleIcon />
+  };
   const [selectedCols, setSelectedCols] = React.useState([]);
-  const [appliedRule, setAppliedRule] = React.useState(false);
-  const { csvData, csvName, importFile, appliedRules } = props;
-
-  function handleDrawerOpen() {
-    setOpen(true);
-  }
-
-  function handleDrawerClose() {
-    setOpen(false);
-  }
-
-  function sliceData(data, rows, cols) {
-    let result = [];
-    let headerRow = [];
-    rows.forEach(rowIdx => {
-      let row = [];
-      cols.forEach(colIdx => {
-        const colName = Object.keys(data[0])[colIdx];
-        if (!headerRow.includes(colName)) {
-          headerRow.push(colName);
-        }
-        row.push(data[rowIdx][colName]);
-      });
-      result.push(row);
-    });
-    result.unshift(headerRow);
-    return result;
-  }
+  const [existingDialogData, setExistingDialogData] = React.useState(null);
+  const [previewData, setPreviewData] = React.useState([]);
+  const { csvData, csvName, importFileFromDB, appliedRules, fileId, deleteRule, applyMultipleRules, getRule } = props;
+  const [rules, setRules] = React.useState(appliedRules);
 
   function renderDialogByAction() {
 
-    console.log(action);
-
-    const previewData = sliceData(csvData, [0, 1], selectedCols);
-
     switch(action) {
+      
       case "Trim":
-        return <TrimDialogContent open={true} title={action} handleClose={() => setAction("")} handleAddRule={() => setAppliedRule(true)} selectedCols={selectedCols} previewData={previewData} />;
+        return <TrimDialogContent existingData={existingDialogData} importFileFromDB={importFileFromDB} fileId={fileId} open={true} title={action} handleClose={() => setAction("")} handleAddRule={(rule) => setRules([...rules, rule])} selectedCols={selectedCols} previewData={previewData} />;
       case "Find and Replace":
-        return <ReplaceDialogContent open={true} title={action} handleClose={() => setAction("")} handleAddRule={(action) => alert(action)} selectedCols={selectedCols} previewData={previewData} />;
+        return <ReplaceDialogContent existingData={existingDialogData} importFileFromDB={importFileFromDB} fileId={fileId} open={true} title={action} handleClose={() => setAction("")} handleAddRule={(rule) => setRules([...rules, rule])} selectedCols={selectedCols} previewData={previewData} />;
       case "Split":
-        return <SplitDialogContent open={true} title={action} handleClose={() => setAction("")} handleAddRule={(action) => alert(action)} selectedCols={selectedCols} previewData={previewData} />;
+        return <SplitDialogContent existingData={existingDialogData} importFileFromDB={importFileFromDB} fileId={fileId} open={true} title={action} handleClose={() => setAction("")} handleAddRule={(rule) => setRules([...rules, rule])} selectedCols={selectedCols} previewData={previewData} />;
       case "Regex":
-        return <RegexDialogContent open={true} title={action} handleClose={() => setAction("")} handleAddRule={(action) => alert(action)} selectedCols={selectedCols} previewData={previewData} />;
+        return <RegexDialogContent existingData={existingDialogData} importFileFromDB={importFileFromDB} fileId={fileId} open={true} title={action} handleClose={() => setAction("")} handleAddRule={(rule) => setRules([...rules, rule])} selectedCols={selectedCols} previewData={previewData} />;
       case "Remove":
-        return <RemoveDialogContent open={true} title={action} handleClose={() => setAction("")} handleAddRule={(action) => alert(action)} selectedCols={selectedCols} previewData={previewData} />;
+        return <RemoveDialogContent existingData={existingDialogData} importFileFromDB={importFileFromDB} fileId={fileId} open={true} title={action} handleClose={() => setAction("")} handleAddRule={(rule) => setRules([...rules, rule])} selectedCols={selectedCols} previewData={previewData} />;
       default:
         return "";
     }
@@ -159,6 +140,44 @@ const MiniDrawer = (props) => {
     setSelectedCols(selectedIndexes);
   }
 
+  function handleEditRule(ruleId, action) {
+    getRule({
+      ruleId
+    }).then(res => {
+      if (action === "Find and replace") {
+        setExistingDialogData({ ...res.rules.rule.args, ruleId });
+        setAction("Find and Replace");
+      } else {
+        setExistingDialogData({ ...res.rules.rule.args, ruleId });
+        setAction(action);
+      }
+
+    });
+
+  
+  }
+
+  function handleDeleteRule(ruleId) {
+
+    deleteRule({
+      fileId,
+      ruleId
+    }).then(res => {
+      applyMultipleRules({
+        ruleIds: res.rules.ruleIds,
+        fileId: res.rules.originalFile
+      }).then(({ rules }) => {
+        importFileFromDB(rules.response.fileId)
+      })
+    })
+  }
+
+  function openDialog(action, selectedCols) {
+    setPreviewData(sliceData(csvData, [0, 1, 2], selectedCols));
+    setExistingDialogData(null);
+    setAction(action);
+  }
+
   return (
     <div className={classes.root}>
       {renderDialogByAction()}
@@ -173,7 +192,7 @@ const MiniDrawer = (props) => {
           <IconButton
             color="inherit"
             aria-label="open drawer"
-            onClick={handleDrawerOpen}
+            onClick={() => setOpen(true)}
             edge="start"
             className={clsx(classes.menuButton, {
               [classes.hide]: open,
@@ -202,7 +221,7 @@ const MiniDrawer = (props) => {
       >
         <div className={classes.toolbar}>
           <h3>TOOLS</h3>
-          <IconButton onClick={handleDrawerClose}>
+          <IconButton onClick={() => setOpen(false)}>
             {theme.direction === 'rtl' ? <ChevronRightIcon /> : <ChevronLeftIcon />}
           </IconButton>
         </div>
@@ -210,8 +229,8 @@ const MiniDrawer = (props) => {
         <List>
           {["Trim", "Find and Replace", "Split", "Regex", "Remove"].map((action, index) => (
             <Tooltip key={index} title={action} placement="right">
-              <ListItem button onClick={() => setAction(action)} key={index}>
-                <ListItemIcon>{iconList[index]}</ListItemIcon>
+              <ListItem button onClick={() => openDialog(action, selectedCols, null)} key={index}>
+                <ListItemIcon>{iconList[action.toLowerCase()]}</ListItemIcon>
                 <ListItemText primary={action} />
               </ListItem>
             </Tooltip>
@@ -219,30 +238,22 @@ const MiniDrawer = (props) => {
         </List>
         <Divider />
         <List>
-          {['Download', "Submit"].map((action, index) => (
+           <h3>APPLIED RULES</h3>
+          {appliedRules.length > 0 ? appliedRules.map((rule, index) => (
             <Tooltip key={index} title={action} placement="right">
-              <ListItem button key={action}>
-                <ListItemIcon>{index % 2 === 0 ? <CloudDownloadIcon /> : <SendIcon />}</ListItemIcon>
-                <ListItemText primary={action} />
+              <ListItem button key={rule.ruleid}>
+                <ListItemIcon>{iconList[rule.template]}</ListItemIcon>
+                <ListItemText primary={rule.template === "find and replace" ? "Replace" : rule.template.charAt(0).toUpperCase() + rule.template.slice(1)} />
+                <IconButton size="small" color="secondary" onClick={() => handleDeleteRule(rule.ruleid)} aria-label="delete"><DeleteIcon/></IconButton>
+                { !(rule.template === "split") ? <IconButton size="small" color="primary" onClick={() => handleEditRule(rule.ruleid, rule.template.charAt(0).toUpperCase() + rule.template.slice(1))} aria-label="edit"><EditIcon/></IconButton> : ""}
               </ListItem>
             </Tooltip>
-          ))}
-        </List>
-        <Divider />
-        <List>
-          {appliedRules.map((rule, index) => (
-            <Tooltip key={index} title={action} placement="right">
-              <ListItem button key={action}>
-                <ListItemIcon>{index % 2 === 0 ? <CloudDownloadIcon /> : <SendIcon />}</ListItemIcon>
-                <ListItemText primary={rule.template} />
-              </ListItem>
-            </Tooltip>
-          ))}
+          )) : "No rules applied"}
         </List>
       </Drawer>
       <main className={classes.content}>
         <div className={classes.toolbar} />
-        <EnhancedTable csvData={csvData} csvName={csvName} importFile={importFile} onSelectedCol={handleSelectedCol} />
+        <EnhancedTable csvData={csvData} csvName={csvName} fileId={fileId} importFileFromDB={importFileFromDB} onSelectedCol={handleSelectedCol} />
       </main>
     </div>
   );
@@ -250,4 +261,4 @@ const MiniDrawer = (props) => {
 
 }
 
-export default MiniDrawer;
+export default connect(null, actions)(MiniDrawer);

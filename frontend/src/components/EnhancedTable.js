@@ -1,6 +1,4 @@
 import React from 'react';
-import { connect } from 'react-redux';
-import * as actions from '../actions';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
 import { lighten, makeStyles } from '@material-ui/core/styles';
@@ -25,57 +23,24 @@ import CheckCircleIcon from '@material-ui/icons/CheckCircle';
 import Button from '@material-ui/core/Button';
 import { CSVLink } from "react-csv";
 import SimpleSelect from './SimpleSelect';
-import { importAll } from '../helper';
-const datasets = importAll(require.context('../datasets/davis'));
-
-function desc(a, b, orderBy) {
-  if (b[orderBy] < a[orderBy]) {
-    return -1;
-  }
-  if (b[orderBy] > a[orderBy]) {
-    return 1;
-  }
-  return 0;
-}
-
-function stableSort(array, cmp) {
-  const stabilizedThis = array.map((el, index) => [el, index]);
-  stabilizedThis.sort((a, b) => {
-    const order = cmp(a[0], b[0]);
-    if (order !== 0) return order;
-    return a[1] - b[1];
-  });
-  return stabilizedThis.map(el => el[0]);
-}
-
-function getSorting(order, orderBy) {
-  return order === 'desc' ? (a, b) => desc(a, b, orderBy) : (a, b) => -desc(a, b, orderBy);
-}
+import { getSorting, stableSort } from '../helper.js';
 
 function EnhancedTableHead(props) {
   const { classes, onSelectAllClick, order, orderBy, numSelected, rowCount, onRequestSort, csvData, onColSelected, selectedCols } = props;
   const createSortHandler = property => event => {
     onRequestSort(event, property);
   };
-  const header = Object.keys(csvData[0]).map(columnName => {
 
-    let numeric = true;
+  const headerRow = csvData.length > 0 ? csvData[0] : [];
 
-    if (isNaN(csvData[0][columnName])) {
-      numeric = false;
-    }
+  const header = headerRow.map(columnName => {
 
     return { 
       id: columnName,
-      numeric,
       disablePadding: false,
       label: columnName
     };
   });
-
-  function handleColSelected(event, index) {
-    onColSelected(index);
-  }
 
   return (
     <TableHead>
@@ -88,21 +53,19 @@ function EnhancedTableHead(props) {
             inputProps={{ 'aria-label': 'select all rows' }}
           />
         </TableCell>
-        {header.map((row, index) => (
-
-          <TableCell
-            key={row.id}
-            align={row.numeric ? 'right' : 'left'}
+        {header.map((row, index) => {
+          return (<TableCell
+            key={index}
             padding={row.disablePadding ? 'none' : 'default'}
-            sortDirection={orderBy === row.id ? order : false}
+            sortDirection={orderBy === index ? order : false}
           >
             <TableSortLabel
-              active={orderBy === row.id}
+              active={orderBy === index}
               direction={order}
-              onClick={createSortHandler(row.id)}
+              onClick={createSortHandler(index)}
             >
-              {row.label}
-              {orderBy === row.id ? (
+              {row.id}
+              {orderBy === index ? (
                 <span className={classes.visuallyHidden}>
                   {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
                 </span>
@@ -112,11 +75,11 @@ function EnhancedTableHead(props) {
               active={true}
               direction='desc'
               IconComponent={selectedCols[index] ? CheckCircleIcon : CheckCircleOutlineIcon}
-              onClick={event  => handleColSelected(event, index)}
+              onClick={event => onColSelected(index)}
             >
             </TableSortLabel>
-          </TableCell>
-        ))}
+          </TableCell>)
+        })}
       </TableRow>
     </TableHead>
   );
@@ -128,7 +91,7 @@ EnhancedTableHead.propTypes = {
   onRequestSort: PropTypes.func.isRequired,
   onSelectAllClick: PropTypes.func.isRequired,
   order: PropTypes.oneOf(['asc', 'desc']).isRequired,
-  orderBy: PropTypes.string.isRequired,
+  orderBy: PropTypes.number.isRequired,
   rowCount: PropTypes.number.isRequired,
 };
 
@@ -161,9 +124,7 @@ const useToolbarStyles = makeStyles(theme => ({
 const EnhancedTableToolbar = props => {
   const classes = useToolbarStyles();
 
-  const { numSelected, rows, importFile } = props;
-
-  const csvFileNames = Object.keys(datasets)
+  const { numSelected, rows, importFileFromDB } = props;
 
   return (
     <Toolbar
@@ -178,7 +139,7 @@ const EnhancedTableToolbar = props => {
           </Typography>
         ) : (
           <Typography variant="h6" id="tableTitle">
-            <SimpleSelect csvFileNames={csvFileNames} importFile={importFile} />
+            <SimpleSelect importFileFromDB={importFileFromDB} />
           </Typography>
         )}
       </div>
@@ -237,19 +198,22 @@ const useStyles = makeStyles(theme => ({
 }));
 
 const EnhancedTable  = (props) => {
-  const { csvData, csvName, importFile, onSelectedCol } = props;
-  let rows = csvData;
+  const { csvData, csvName, importFileFromDB, onSelectedCol, fileId } = props;
+  let rows = csvData.slice(1);
   const classes = useStyles();
   const [order, setOrder] = React.useState('asc');
-  const [orderBy, setOrderBy] = React.useState('calories');
+  const [orderBy, setOrderBy] = React.useState(0);
   const [selected, setSelected] = React.useState([]);
   const [page, setPage] = React.useState(0);
-  const [dense, setDense] = React.useState(false);
+  const [dense, setDense] = React.useState(true);
   const [rowsPerPage, setRowsPerPage] = React.useState(25);
   let colMap = {};
-  Object.keys(rows[0]).forEach((key, index) => {
-    colMap[index] = false;
-  });
+  if (rows && rows.length > 0) {
+    Object.keys(rows[0]).forEach((key, index) => {
+      colMap[index] = false;
+    });
+  }
+  
   const [selectedCols, setSelectedCols] = React.useState(colMap)
   function handleRequestSort(event, property) {
     const isDesc = orderBy === property && order === 'desc';
@@ -266,24 +230,23 @@ const EnhancedTable  = (props) => {
     setSelected([]);
   }
 
-  function handleClick(event, name) {
-    const selectedIndex = selected.indexOf(name);
-    let newSelected = [];
+  function handleClick(event, selectedIndex) {
+    // if (selectedIndex === -1) {
+    //   newSelected = newSelected.concat(selected);
+    // } else if (selectedIndex === 0) {
+    //   newSelected = newSelected.concat(selected.slice(1));
+    // } else if (selectedIndex === selected.length - 1) {
+    //   newSelected = newSelected.concat(selected.slice(0, -1));
+    // } else if (selectedIndex > 0) {
+    //   newSelected = newSelected.concat(
+    //     selected.slice(0, selectedIndex),
+    //     selected.slice(selectedIndex + 1),
+    //   );
+    // }
 
-    if (selectedIndex === -1) {
-      newSelected = newSelected.concat(selected, name);
-    } else if (selectedIndex === 0) {
-      newSelected = newSelected.concat(selected.slice(1));
-    } else if (selectedIndex === selected.length - 1) {
-      newSelected = newSelected.concat(selected.slice(0, -1));
-    } else if (selectedIndex > 0) {
-      newSelected = newSelected.concat(
-        selected.slice(0, selectedIndex),
-        selected.slice(selectedIndex + 1),
-      );
-    }
+    console.log(selectedIndex);
 
-    setSelected(newSelected);
+    setSelected([...selected, selectedIndex]);
   }
 
   function handleChangePage(event, newPage) {
@@ -305,7 +268,7 @@ const EnhancedTable  = (props) => {
     setSelectedCols(newSelectedCols);
   }
 
-  const isSelected = name => selected.indexOf(name) !== -1;
+  const isSelected = index => selected.length > 0 && index in selected;
 
   const emptyRows = rowsPerPage - Math.min(rowsPerPage, rows.length - page * rowsPerPage);
   
@@ -316,7 +279,7 @@ const EnhancedTable  = (props) => {
   return (
     <div className={classes.root}>
       <Paper className={classes.paper}>
-        <EnhancedTableToolbar csvName={csvName} rows={rows} importFile={importFile} numSelected={selected.length} />
+        <EnhancedTableToolbar csvName={csvName} rows={rows} fileId={fileId} importFileFromDB={importFileFromDB} numSelected={selected.length} />
         <div className={classes.tableWrapper}>
           <Table
             className={classes.table}
@@ -336,15 +299,15 @@ const EnhancedTable  = (props) => {
               selectedCols={selectedCols}
             />
             <TableBody>
-              {rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+              {rows && rows.length > 0 ? rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((row, index) => {
-                  const isItemSelected = isSelected(row.name);
+                  const isItemSelected = isSelected(index);
                   const labelId = `enhanced-table-checkbox-${index}`;
-                 
+                                    
                   return (
                     <TableRow
                       hover
-                      onClick={event => handleClick(event, row.name)}
+                      onClick={event => handleClick(event, index)}
                       role="checkbox"
                       aria-checked={isItemSelected}
                       tabIndex={-1}
@@ -357,16 +320,16 @@ const EnhancedTable  = (props) => {
                           inputProps={{ 'aria-labelledby': labelId }}
                         />
                       </TableCell>
-                      { Object.keys(row).map((key, index) => {
-                        if (index === 0) {
-                          return <TableCell key={key} align="left" className={selectedCols[index] ? classes.tableCellSelected : ""}>{row[key]}</TableCell>;
-                        } else {
-                          return <TableCell key={key} align="right" className={selectedCols[index] ? classes.tableCellSelected : ""}>{row.calories}</TableCell>;
-                        }
+                      { row.map((value, index) => {
+                          return <TableCell key={index} className={selectedCols[index] ? classes.tableCellSelected : ""}>{value}</TableCell>;
                       })}
                     </TableRow>
                   );
-                })}
+                }) : (<TableRow>
+                      <TableCell>
+                        <Typography variant="h6">Choose dataset from dropdown.</Typography>
+                      </TableCell>
+                      </TableRow>)}
               {emptyRows > 0 && (
                 <TableRow style={{ height: 49 * emptyRows }}>
                   <TableCell colSpan={6} />
@@ -399,8 +362,4 @@ const EnhancedTable  = (props) => {
   );
 }
 
-const mapStateToProps = ({ files }) => {
-  return { files };
-}
-
-export default connect(mapStateToProps, actions)(EnhancedTable);
+export default EnhancedTable;

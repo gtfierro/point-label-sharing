@@ -34,31 +34,76 @@ const useStyles = makeStyles(theme => ({
   }));
 
 const ReplaceDialogContent = (props) => {
-    const { previewData, selectedCols, open, handleClose, title, createRule, applyRule  } = props;
+    const { previewData, selectedCols, open, handleClose, title, createRule, handleAddRule, applyRule, applyMultipleRules, updateRule, fileId, importFileFromDB, existingData  } = props;
     const classes = useStyles();
 
-    const [regExp, setRegExp] = React.useState("");
+    let existingRegExp = "";
 
-    console.log(selectedCols);
+    if (existingData) {
+        existingRegExp = existingData[0];
+    }
+
+    const [regExp, setRegExp] = React.useState(existingRegExp);
+
     function handleApplyRule(e) {
-        createRule({
-            templateId: "regex_match",
-            data: {
-                'cols': selectedCols,
-                'args': ["abc"]
-            }
-        }).then(res => {
-            applyRule({
-                ruleId: res.rules.response.ruleid,
-                fileId: "58063"
-            }).then(() => {
-                alert("DONE");
+        if (existingData) {
+            updateRule({
+                'templateId': "regex",
+                'ruleId': existingData.ruleId,
+                'fileId': fileId,
+                'data': {
+                    'cols': selectedCols,
+                    'args': [regExp]
+                }
+            }).then(res => {
+                applyMultipleRules({
+                    ruleIds: res.rules.ruleIds,
+                    fileId: res.rules.originalFile
+                }).then(({ rules }) => {
+                    importFileFromDB(rules.response.fileId);
+                });
             });
-        });
+        } else {
+            createRule({
+                templateId: "regex",
+                data: {
+                    'cols': selectedCols,
+                    'args': [regExp]
+                }
+            }).then(res => {
+                const ruleData = {
+                    ruleid: res.rules.response.ruleid,
+                    template: "regex"
+                };
+
+                handleAddRule(ruleData);
+
+                applyRule({
+                    ruleId: res.rules.response.ruleid,
+                    fileId
+                }).then(res => {
+                    importFileFromDB(res.rules.response.fileid);
+                });
+            });
+        }
 
         handleClose();
+    }
 
-        console.log(regExp);
+    function renderPreview() {
+        if (!existingData) {
+            return (
+                <div>
+                    <DialogContentText color="textPrimary" variant="h6">
+                    PREVIEW:
+
+                    </DialogContentText>
+                    { selectedCols.length > 0 ? <SimpleTable regExp={regExp} previewData={previewData} /> : "First, choose the columns you would like to match with regex."} 
+                </div>
+            );
+        }
+
+        return "";
     }
    
     return (
@@ -67,31 +112,29 @@ const ReplaceDialogContent = (props) => {
           <DialogTitle id="form-dialog-title">{title}</DialogTitle>
             <DialogContent>
                 <DialogContentText color="textPrimary">
-                Filter all part of the columns 
+                Match all text in columns to specified regular expression.
                 </DialogContentText>
                 <form className={classes.container} noValidate autoComplete="off">
                     <div>
                         <TextField
                             id="outlined-dense"
-                            label="Find"
+                            label="Regular Expression"
                             className={clsx(classes.textField, classes.dense)}
                             margin="dense"
                             variant="outlined"
+                            value={regExp}
                             onChange={(e) => setRegExp(e.target.value)}
                         />
                     </div>
                 </form>
-                <DialogContentText color="textPrimary" variant="h6">
-                    PREVIEW:
-                </DialogContentText>
-                { selectedCols.length > 0 ? <SimpleTable regExp={regExp} previewData={previewData} /> : "First, choose the columns you would like to match with regex."} 
+                {renderPreview()}
             </DialogContent>
             <DialogActions>
                 <Button onClick={handleClose} color="primary">
                     Cancel
                 </Button>
                 <Button onClick={handleApplyRule} color="primary">
-                    Apply Rule
+                    { existingData ? "Update Rule" : "Apply Rule" }
                 </Button>
             </DialogActions>
         </Dialog>        

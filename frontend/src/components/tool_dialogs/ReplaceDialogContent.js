@@ -2,8 +2,6 @@ import React from 'react';
 import clsx from 'clsx';
 import { makeStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
-import Fab from '@material-ui/core/Fab';
-import AddIcon from '@material-ui/icons/Add';
 import TextField from '@material-ui/core/TextField';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
@@ -36,32 +34,78 @@ const useStyles = makeStyles(theme => ({
   }));
 
 const ReplaceDialogContent = (props) => {
-    const { previewData, selectedCols, open, handleClose, title, createRule, applyRule  } = props;
+    const { previewData, selectedCols, open, handleClose, title, createRule, handleAddRule, applyRule, applyMultipleRules, updateRule, fileId, importFileFromDB, existingData  } = props;
     const classes = useStyles();
 
-    const [wordToFind, setWordToFind] = React.useState("");
-    const [wordToReplace, setWordToReplace] = React.useState("");
+    let existingWordToFind = "";
+    let existingWordToReplace = "";
+    if (existingData) {
+        existingWordToFind = existingData[1];
+        existingWordToReplace = existingData[2];
+    }
+    const [wordToFind, setWordToFind] = React.useState(existingWordToFind);
+    const [wordToReplace, setWordToReplace] = React.useState(existingWordToReplace);
 
-    console.log(selectedCols);
     function handleApplyRule(e) {
-        createRule({
-            templateId: "replace",
-            data: {
-                'cols': selectedCols,
-                'args': [false, "abc", "SAI"]
-            }
-        }).then(res => {
-            applyRule({
-                ruleId: res.rules.response.ruleid,
-                fileId: "58063"
-            }).then(() => {
-                alert("DONE");
+        if (existingData) {
+            updateRule({
+                'templateId': "find and replace",
+                'ruleId': existingData.ruleId,
+                'fileId': fileId,
+                'data': {
+                    'cols': selectedCols,
+                    'args': [false, wordToFind, wordToReplace]
+                }
+            }).then(res => {
+                applyMultipleRules({
+                    ruleIds: res.rules.ruleIds,
+                    fileId: res.rules.originalFile
+                }).then(({ rules }) => {
+                    importFileFromDB(rules.response.fileId);
+                });
             });
-        });
+        } else {
+            createRule({
+                templateId: "find and replace",
+                data: {
+                    'cols': selectedCols,
+                    'args': [false, wordToFind, wordToReplace]
+                }
+            }).then(res => {
+                const ruleData = {
+                    ruleid: res.rules.response.ruleid,
+                    template: "find and replace"
+                };
+        
+                handleAddRule(ruleData);
+    
+                applyRule({
+                    ruleId: res.rules.response.ruleid,
+                    fileId
+                }).then(res => {
+                    importFileFromDB(res.rules.response.fileid);
+                });
+            });
+        }
 
         handleClose();
 
-        console.log(wordToFind, wordToReplace);
+    }
+
+    function renderPreview() {
+        if (!existingData) {
+            return (
+                <div>
+                    <DialogContentText color="textPrimary" variant="h6">
+                    PREVIEW:
+
+                    </DialogContentText>
+                    { selectedCols.length > 0 ? <SimpleTable findAndReplaceWords={[wordToFind, wordToReplace]} previewData={previewData} /> : "First, choose the columns you would like to replace characters."} 
+                </div>
+            );
+        }
+
+        return "";
     }
    
     return (
@@ -80,6 +124,7 @@ const ReplaceDialogContent = (props) => {
                             className={clsx(classes.textField, classes.dense)}
                             margin="dense"
                             variant="outlined"
+                            value={wordToFind}
                             onChange={(e) => setWordToFind(e.target.value)}
                         />
                         <TextField
@@ -88,26 +133,19 @@ const ReplaceDialogContent = (props) => {
                             className={clsx(classes.textField)}
                             margin="dense"
                             variant="outlined"
+                            value={wordToReplace}
                             onChange={(e) => setWordToReplace(e.target.value)}
                         />
                     </div>
-                   
-                    <Fab size="small" color="primary" aria-label="add" className={classes.margin}>
-                        <AddIcon />
-                    </Fab>
                 </form>
-                <DialogContentText color="textPrimary" variant="h6">
-                    PREVIEW:
-
-                </DialogContentText>
-                { selectedCols.length > 0 ? <SimpleTable findAndReplaceWords={[wordToFind, wordToReplace]} previewData={previewData} /> : "First, choose the columns you would like to replace."} 
+                {renderPreview()}
             </DialogContent>
             <DialogActions>
                 <Button onClick={handleClose} color="primary">
                     Cancel
                 </Button>
                 <Button onClick={handleApplyRule} color="primary">
-                    Apply Rule
+                    { existingData ? "Update Rule" : "Apply Rule" }
                 </Button>
             </DialogActions>
         </Dialog>        

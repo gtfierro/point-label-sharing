@@ -7,99 +7,79 @@ import {
     convertCSVTo2DArray,
     importAll
 } from '../helper';
-const datasets = importAll(require.context('../datasets/davis'));
+const datasets = importAll(require.context('../datasets/random'));
 
 class Dashboard extends Component {
     constructor(props) {
         super(props);
 
         this.state = {
-            csvFilePath: datasets["ACAD.csv"]
+            fileId: "",
+            appliedRules: null
         };
       
-        this.importFile = this.importFile.bind(this);
+        this.importFileFromDB = this.importFileFromDB.bind(this);
     }
 
     componentDidMount() {
-        if (!this.props.rules.rules || this.props.rules.rules.length === 0) {
-            this.props.getAllRules();
-        }
-
-        this.getCSVData(datasets["ACAD.csv"], data => {
-            this.setState({
-              csvData: convertCSVTo2DArray(data)
-            });
-          });
-      
-        if (this.state.csvData && this.state.csvData.length > 0) {
-    
-        this.props.getAllFiles();
-    
-        }
-      
         //this.uploadDatasetsToDB();
-
-        console.log(this.props.rules);
     }
 
     render() {
-        const { rules, files } = this.props;
+        const { files } = this.props;
 
-        //this.props.files.fileIds.forEach(fileId => this.props.getFile({ fileId }))
-        //console.log();
+        const csvData = files.file ? files.file.contents : [];
+        const csvName = files.file ? files.file.name : [];
 
-        if (!rules.rules || !this.state.csvData || this.state.csvData.length <= 0) {
-            return <div>Loading...</div>;
-        }
-
-        console.log(rules.rules);
-
-        return (
-            <MiniDrawer csvData={this.state.csvData} csvName={this.state.csvFilePath.substring(this.state.csvFilePath.lastIndexOf("/") + 1)} importFile={this.importFile} appliedRules={rules.rules} />
-        )
+        return <MiniDrawer fileId={this.state.fileId} csvData={csvData} csvName={csvName} importFileFromDB={this.importFileFromDB} appliedRules={this.state.appliedRules || []} />;
     }
 
     uploadDatasetsToDB() {
-        Object.keys(datasets).forEach(dsName => {
-    
-          if (dsName) {
-            this.getCSVData(dsName, (csvData) => {
-              this.props.createFile({
-                fileContents: {
-                  name: datasets[dsName],
-                  contents: convertCSVTo2DArray(csvData)
-                }
-              });
-            });
-          }
-         
-        });
+        for(const dsName of Object.keys(datasets)) {
+            if (dsName) {
+                this.getCSVData(datasets[dsName], (csvData) => {
+                    this.props.createFile({
+                        fileContents: {
+                            name: dsName,
+                            contents: convertCSVTo2DArray(csvData)
+                        }
+                    });
+                });
+            }
+        }
+
+        // this.getCSVData(datasets[Object.keys(datasets)[1]], (csvData) => {
+
+        //     this.props.createFile({
+        //       fileContents: {
+        //         name: Object.keys(datasets)[1],
+        //         contents: convertCSVTo2DArray(csvData)
+        //       }
+        //     });
+        // });
     }
     
     getCSVData(filePath, callback) {
     
-        console.log(filePath);
-
         Papa.parse(filePath, {
             download: true,
-            header: true,
             complete: results => {
-            if (results && results.data) {
-                callback(results.data);
-            }
+                if (results && results.data) {
+                    callback(results.data);
+                }
             }
         });
     }    
 
-    importFile(fileName) {
-        console.log(fileName);
-        this.getCSVData(datasets[fileName], data => {
-          this.setState({
-            csvFilePath: datasets[fileName],
-            csvData: convertCSVTo2DArray(data)
-          });
+    importFileFromDB(fileId) {
+        this.props.getRulesByFile({ fileId }).then(res => {
+            this.props.getFile({ fileId }).then(fileRes => {
+                this.props.getAllFiles({ appliedRules: true }).then(res2 => {
+                    this.setState({ fileId, appliedRules: res.rules.rules });
+                });
+            });
         });
-      }
+    }
 
 }
 

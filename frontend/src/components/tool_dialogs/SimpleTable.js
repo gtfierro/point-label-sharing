@@ -8,7 +8,6 @@ import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
 import Button from '@material-ui/core/Button';
 import ButtonGroup from '@material-ui/core/ButtonGroup';
-import _ from 'lodash';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -21,8 +20,6 @@ const useStyles = makeStyles(theme => ({
 export default function SimpleTable(props) {
   const { previewData, trimRange, findAndReplaceWords, delimeterAndSection, onSectionClicked, wordToFind } = props;
 
-  console.log(previewData);
-  console.log(trimRange);
   const classes = useStyles();
   
   const columnNames = previewData[0];
@@ -63,7 +60,7 @@ export default function SimpleTable(props) {
   }
 
   function escapeRegExp(str) {
-    return str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
+    return str.replace(/([.*+?^=!:${}()|[\]/\\])/g, "\\$1");
   }
 
   function handleSectionClick(e, sectionIdx) {
@@ -75,8 +72,8 @@ export default function SimpleTable(props) {
       <Table className={classes.table}>
         <TableHead>
           <TableRow>
-            {columnNames.map(columnName => {
-                return <TableCell key={columnName}>{columnName}</TableCell>;
+            {columnNames.map((columnName, index) => {
+                return <TableCell key={index}>{columnName}</TableCell>;
             })}
             </TableRow>
         </TableHead>

@@ -2,8 +2,6 @@ import React from 'react';
 import clsx from 'clsx';
 import { makeStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
-import Fab from '@material-ui/core/Fab';
-import AddIcon from '@material-ui/icons/Add';
 import TextField from '@material-ui/core/TextField';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
@@ -35,32 +33,78 @@ const useStyles = makeStyles(theme => ({
     }
   }));
 
-const ReplaceDialogContent = (props) => {
-    const { previewData, selectedCols, open, handleClose, title, createRule, applyRule  } = props;
+const RemoveDialogContent = (props) => {
+    const { previewData, selectedCols, open, handleClose, title, createRule,  handleAddRule, applyRule, applyMultipleRules, updateRule, fileId, importFileFromDB, existingData  } = props;
     const classes = useStyles();
 
-    const [wordToFind, setWordToFind] = React.useState("");
+    let existingWordToFind = "";
 
-    console.log(selectedCols);
+    if (existingData) {
+        existingWordToFind = existingData[0];
+    }
+
+    const [wordToFind, setWordToFind] = React.useState(existingWordToFind);
+
     function handleApplyRule(e) {
-        createRule({
-            templateId: "remove",
-            data: {
-                'cols': selectedCols,
-                'args': ["abc"]
-            }
-        }).then(res => {
-            applyRule({
-                ruleId: res.rules.response.ruleid,
-                fileId: "58063"
-            }).then(() => {
-                alert("DONE");
+        if (existingData) {
+            updateRule({
+                'templateId': "remove",
+                'ruleId': existingData.ruleId,
+                'fileId': fileId,
+                'data': {
+                    'cols': selectedCols,
+                    'args': [wordToFind]
+                }
+            }).then(res => {
+                applyMultipleRules({
+                    ruleIds: res.rules.ruleIds,
+                    fileId: res.rules.originalFile
+                }).then(({ rules }) => {
+                    importFileFromDB(rules.response.fileId);
+                });
             });
-        });
+        } else {
+            createRule({
+                templateId: "remove",
+                data: {
+                    'cols': selectedCols,
+                    'args': [wordToFind]
+                }
+            }).then(res => {
+                const ruleData = {
+                    ruleid: res.rules.response.ruleid,
+                    template: "remove"
+                };
+
+                handleAddRule(ruleData);
+
+                applyRule({
+                    ruleId: res.rules.response.ruleid,
+                    fileId
+                }).then(res => {
+                    importFileFromDB(res.rules.response.fileid);
+                });
+            });
+        }
 
         handleClose();
 
-        console.log(wordToFind);
+    }
+
+    function renderPreview() {
+        if (!existingData) {
+            return (
+                <div>
+                    <DialogContentText color="textPrimary" variant="h6">
+                    PREVIEW:
+
+                    </DialogContentText>
+                    { selectedCols.length > 0 ? <SimpleTable wordToFind={wordToFind} previewData={previewData} /> : "First, choose the columns you would like to remove characters."} 
+                </div>
+            );
+        }
+
+        return "";
     }
    
     return (
@@ -79,25 +123,23 @@ const ReplaceDialogContent = (props) => {
                             className={clsx(classes.textField, classes.dense)}
                             margin="dense"
                             variant="outlined"
+                            value={wordToFind}
                             onChange={(e) => setWordToFind(e.target.value)}
                         />
                     </div>
                 </form>
-                <DialogContentText color="textPrimary" variant="h6">
-                    PREVIEW:
-                </DialogContentText>
-                { selectedCols.length > 0 ? <SimpleTable wordToFind={wordToFind} previewData={previewData} /> : "First, choose the columns you would like to remove occurrences."} 
+                {renderPreview()}
             </DialogContent>
             <DialogActions>
                 <Button onClick={handleClose} color="primary">
                     Cancel
                 </Button>
                 <Button onClick={handleApplyRule} color="primary">
-                    Apply Rule
+                    { existingData ? "Update Rule" : "Apply Rule" }
                 </Button>
             </DialogActions>
         </Dialog>        
     );
 }
 
-export default connect(null, actions)(ReplaceDialogContent);
+export default connect(null, actions)(RemoveDialogContent);

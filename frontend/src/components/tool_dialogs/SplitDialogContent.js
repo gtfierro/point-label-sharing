@@ -36,7 +36,7 @@ const useStyles = makeStyles(theme => ({
   }));
 
 const SplitDialogContent = (props) => {
-    const { previewData, selectedCols, open, handleClose, title, createRule, applyRule  } = props;
+    const { previewData, selectedCols, open, handleClose, title, createRule, applyRule, fileId, importFileFromDB, handleAddRule  } = props;
     const classes = useStyles();
 
     const [delimeter, setDelimeter] = React.useState("");
@@ -51,11 +51,20 @@ const SplitDialogContent = (props) => {
                 'args': [delimeter, section]
             }
         }).then(res => {
+            const ruleData = {
+                ruleid: res.rules.response.ruleid,
+                template: "split"
+            };
+
+            console.log(ruleData);
+
+            handleAddRule(ruleData);
+
             applyRule({
                 ruleId: res.rules.response.ruleid,
-                fileId: "58063"
-            }).then(() => {
-                alert("DONE");
+                fileId
+            }).then(res => {
+                importFileFromDB(res.rules.response.fileid);
             });
         });
 

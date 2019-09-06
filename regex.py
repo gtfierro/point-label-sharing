@@ -2,9 +2,10 @@ import re
 
 def rule(reg_expr):
     def impl(inp):
-        match = re.search(reg_expr, inp)
+        match = re.match(reg_expr, inp)
         if match:
-            return match.group()
+            print(match.groups())
+            return ''.join(match.groups())
         else:
             return inp
     return impl
