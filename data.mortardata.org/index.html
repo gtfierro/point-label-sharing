@@ -5,16 +5,71 @@
         <title>data.mortardata.org</title>
     </head>
     <body>
-        <div class="row">
-            <div class="col-xs">
-                <h3>Raw Building Metadata Dataset</h3>
-                <p>
-                Data available <a href="http://data.mortardata.org.s3-website-us-west-1.amazonaws.com/metadata">here</a>.
-                </p>
+        <div class="content">
+            <div>
+                <h1>Open Datasets</h1>
             </div>
-            <div class="col-xs">
-                <h3>Mortar Testbed</h3>
+            <div class="row between-xs">
+                <div class="col-xs-6 separated">
+                    <h2>Raw Building Metadata Dataset</h2>
+
+                    <p>
+                    Semantic metadata standards for buildings such as <a href="https://brickschema.org">Brick</a> and <a href="https://project-haystack.org/">Project Haystack</a> show promise
+                    in enablilng wide-scale deployment of energy-efficiency measures and advanced building management technologies. Converting existing building metadata to these standard forms
+                    is an area of active research.
+                    </p>
+
+                    <p>
+                    The data available here is a collection of metadata pulled from real building management systems around the world. By making this data available, we hope to facilitate research
+                    into the automated conversion of unstructured metadata into standard forms.
+                    The dataset currently contains attributes for <b>103,064 points</b> from <b>92 buildings</b>.
+                    </p>
+
+                    <hr />
+
+                    <p>
+                    Data is distributed in CSV form:
+                    </p>
+
+                    <ul>
+                        <li>Periodic releases of all data: <a href="http://data.mortardata.org.s3-website-us-west-1.amazonaws.com/metadata/releases">ZIP file</a></li>
+                        <li>Data for individual sites: <a href="http://data.mortardata.org.s3-website-us-west-1.amazonaws.com/metadata">CSV files</a>.
+                    </ul>
+
+                    <p>
+                    <b>This dataset is not static!</b>. Email CSV dumps of building metadata (or questions) to <u>data [AT] mortardata [DOT] org</u>. We have produced an
+                    <a href="https://github.com/gtfierro/point-label-sharing">open-source tool</a> for scraping and cleaning building metadata from existing buildings.
+                    </p>
+
+                    <p><i>The dataset and data collection tool are described in an academic paper (to be released...)</i></p>
+                </div>
+                <div class="col-xs-6 separated">
+                    <h2>Mortar Testbed</h2>
+
+                    <p>
+                    Access to large amounts of real-world data has long been a barrier to the development and evaluation of analytics applications for the built environment. Open data sets exist, but they are limited in their <u>span</u> (how much data is available) and <u>context</u> (what kind of data is available and how it is described).
+                    </p>
+
+                    <p>
+                    The goal of Mortar is to provide a large, diverse and consistently updated testbed of buildings and building data to facilitate reproducible evaluation of building analytics.
+                    </p>
+
+                    <p>
+                    At this time, Mortar contains <b>107 buildings</b>, spanning over <b>10 billion data points</b> and <b>26,000 data streams</b>. Context for these data streams  is provided by a <a href="https://brickschema.org/">Brick model</a>. The Brick model describes for each building: (1) what data streams exist and what they measure, (2) what equipment exists and how it is monitored, (3) the relationships between equipment in terms of flows, composition and location.
+                    </p>
+
+                    <hr />
+
+                    <p>
+                    Information how to access the Mortar dataset is available at <a href="https://mortardata.org">https://mortardata.org</a>.
+                    </p>
+
+                </div>
             </div>
+        </div>
+        <div class="footer">
+            <p>Data collected and maintained by UC Berkeley and <a href="http://people.eecs.berkeley.edu/~gtfierro/">Gabe Fierro</a></p>
+            <p>Send comments/questions to <u>data [AT] mortardata [DOT] org</u></p>
         </div>
     </body>
 </html>
