@@ -1,0 +1,36 @@
+body {
+    margin:40px auto;
+    max-width:1200;
+    line-height:1.6;
+    font-size:18px;
+    color:#444;
+    padding:0 10px;
+    font-weight: 400;
+    font-family: "Lucida Console", Monaco, monospace;
+    line-height: 24px;
+}
+h1,h2,h3 {
+    line-height:1.2;
+    color:#333;
+    text-align: center;
+}
+a {
+    text-decoration: none;
+}
+a:link {
+    color: blue;
+}
+a:visited {
+    color: blue;
+}
+a:active {
+    color: blue;
+}
+a:hover {
+    color: blue;
+    border-bottom:1px dotted blue;
+}
+img {
+    float: left;
+    padding-right: 40px;
+}
