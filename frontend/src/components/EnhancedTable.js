@@ -23,7 +23,7 @@ import CheckCircleIcon from '@material-ui/icons/CheckCircle';
 import Button from '@material-ui/core/Button';
 import { CSVLink } from "react-csv";
 import SimpleSelect from './SimpleSelect';
-import { getSorting, stableSort } from '../helper.js';
+import { getSorting, stableSort, convertCSVTo2DArray } from '../helper.js';
 
 function EnhancedTableHead(props) {
   const { classes, onSelectAllClick, order, orderBy, numSelected, rowCount, onRequestSort, csvData, onColSelected, selectedCols } = props;
@@ -31,7 +31,7 @@ function EnhancedTableHead(props) {
     onRequestSort(event, property);
   };
 
-  const headerRow = csvData.length > 0 ? csvData[0] : [];
+  const headerRow = csvData && csvData.length > 0 ? csvData[0] : [];
 
   const header = headerRow.map(columnName => {
 
@@ -198,8 +198,8 @@ const useStyles = makeStyles(theme => ({
 }));
 
 const EnhancedTable  = (props) => {
-  const { csvData, csvName, importFileFromDB, onSelectedCol, fileId } = props;
-  let rows = csvData.slice(1);
+  const { csvData, csvName, importFileFromDB, onSelectedCol, fileId, updateFile } = props;
+  let rows = csvData && csvData.length > 0 ? csvData.slice(1) : [];
   const classes = useStyles();
   const [order, setOrder] = React.useState('asc');
   const [orderBy, setOrderBy] = React.useState(0);
@@ -223,7 +223,7 @@ const EnhancedTable  = (props) => {
 
   function handleSelectAllClick(event) {
     if (event.target.checked) {
-      const newSelecteds = rows.map(n => n[Object.keys(n)[0]]);
+      const newSelecteds = rows.map((n, index) => index);
       setSelected(newSelecteds);
       return;
     }
@@ -231,22 +231,18 @@ const EnhancedTable  = (props) => {
   }
 
   function handleClick(event, selectedIndex) {
-    // if (selectedIndex === -1) {
-    //   newSelected = newSelected.concat(selected);
-    // } else if (selectedIndex === 0) {
-    //   newSelected = newSelected.concat(selected.slice(1));
-    // } else if (selectedIndex === selected.length - 1) {
-    //   newSelected = newSelected.concat(selected.slice(0, -1));
-    // } else if (selectedIndex > 0) {
-    //   newSelected = newSelected.concat(
-    //     selected.slice(0, selectedIndex),
-    //     selected.slice(selectedIndex + 1),
-    //   );
-    // }
 
     console.log(selectedIndex);
 
-    setSelected([...selected, selectedIndex]);
+    let tempSelected = [...selected];
+    const index = tempSelected.indexOf(selectedIndex);
+
+    if (index === -1) {
+      setSelected([...selected, selectedIndex]);
+    } else {
+      tempSelected.splice(index, 1);
+      setSelected(tempSelected);
+    }
   }
 
   function handleChangePage(event, newPage) {
@@ -268,13 +264,24 @@ const EnhancedTable  = (props) => {
     setSelectedCols(newSelectedCols);
   }
 
-  const isSelected = index => selected.length > 0 && index in selected;
+  const isSelected = index => selected.length > 0 && selected.includes(index);
 
   const emptyRows = rowsPerPage - Math.min(rowsPerPage, rows.length - page * rowsPerPage);
   
   let sortedRows = stableSort(rows, getSorting(order, orderBy));
 
   rows = sortedRows
+
+  //if (rows.length > 0 && fileId) {
+    // console.log(rows);
+    // updateFile({
+    //   fileId,
+    //   contents: [csvData[0], ...rows]
+    // }).then(res => {
+    //   console.log(res.files.file.fileid)
+    //   importFileFromDB(res.files.file.fileid)
+    // });
+  //}
 
   return (
     <div className={classes.root}>

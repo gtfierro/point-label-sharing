@@ -7,7 +7,7 @@ import {
     convertCSVTo2DArray,
     importAll
 } from '../helper';
-const datasets = importAll(require.context('../datasets/davis'));
+//const datasets = importAll(require.context('../datasets/davis'));
 
 class Dashboard extends Component {
     constructor(props) {
@@ -21,47 +21,44 @@ class Dashboard extends Component {
         this.importFileFromDB = this.importFileFromDB.bind(this);
     }
 
-    componentDidMount() {
-        this.uploadDatasetsToDB();
-    }
-
     render() {
         const { files } = this.props;
 
         const csvData = files.file ? files.file.contents : [];
         const csvName = files.file ? files.file.name : [];
 
-        return <MiniDrawer fileId={this.state.fileId} csvData={csvData} csvName={csvName} importFileFromDB={this.importFileFromDB} appliedRules={this.state.appliedRules || []} />;
+        return <MiniDrawer fileId={this.state.fileId} csvData={csvData} csvName={csvName} uploadFile={(file) => this.uploadFile(file)} importFileFromDB={this.importFileFromDB} appliedRules={this.state.appliedRules || []} />;
     }
 
-    uploadDatasetsToDB() {
-        for(const dsName of Object.keys(datasets).slice(1, 6)) {
-            if (dsName) {
-                this.getCSVData(datasets[dsName], (csvData) => {
-                    this.props.createFile({
-                        fileContents: {
-                            name: dsName,
-                            contents: convertCSVTo2DArray(csvData)
-                        }
-                    });
-                });
-            }
-        }
-
-        // this.getCSVData(datasets[Object.keys(datasets)[1]], (csvData) => {
-
-        //     this.props.createFile({
-        //       fileContents: {
-        //         name: Object.keys(datasets)[1],
-        //         contents: convertCSVTo2DArray(csvData)
-        //       }
-        //     });
-        // });
+    uploadFile(file) {
+        
+        this.getCSVData(file, (csvData) => {
+            this.props.createFile({
+                fileContents: {
+                    name: file.name,
+                    contents: convertCSVTo2DArray(csvData)
+                }
+            }).then(res => {
+                this.importFileFromDB(res.files.response.fileid)
+            });
+        });
+        // for(const dsName of Object.keys(datasets).slice(1, 6)) {
+        //     if (dsName) {
+        //         this.getCSVData(datasets[dsName], (csvData) => {
+        //             this.props.createFile({
+        //                 fileContents: {
+        //                     name: dsName,
+        //                     contents: convertCSVTo2DArray(csvData)
+        //                 }
+        //             });
+        //         });
+        //     }
+        // }
     }
     
-    getCSVData(filePath, callback) {
+    getCSVData(file, callback) {
     
-        Papa.parse(filePath, {
+        Papa.parse(file, {
             download: true,
             complete: results => {
                 if (results && results.data) {

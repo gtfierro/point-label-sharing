@@ -178,7 +178,11 @@ def get_or_update_file(fileid):
     if request.method == 'GET':
         return jsonify(db.get('files', fileid, {}))
     else:
-        db.update("files", fileid, request.get_json(force=True))
+        file_data = request.get_json(force=True)
+        new_file = db.get("files", fileid)
+        new_file["contents"] = file_data["contents"]
+        print(new_file)
+        fileid = db.update("files", fileid, new_file)
         return jsonify({ 'fileid': fileid })
 
 @app.route('/file', methods=['GET','POST'])
@@ -328,9 +332,9 @@ def home(filename):
    return send_from_directory('frontend/build', filename)
 
 if __name__ == '__main__':
-    owd = os.getcwd()
-    os.chdir("frontend")
-    call(["npm", "run", "build"])
-    os.chdir(owd)
+    # owd = os.getcwd()
+    # os.chdir("frontend")
+    # call(["npm", "run", "build"])
+    # os.chdir(owd)
 
     app.run(host='0.0.0.0',debug=True)

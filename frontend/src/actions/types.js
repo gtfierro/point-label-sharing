@@ -12,5 +12,6 @@ export const GET_ALL_FILE_IDS = 'get_all_file_ids';
 export const GET_ALL_FILES = 'get_all_files';
 export const CREATE_TEMPLATE = 'create_template';
 export const CREATE_FILE = 'create_file';
+export const UPDATE_FILE = 'update_file';
 export const CREATE_RULE = 'create_rule';
 export const THROW_ERROR = 'throw_error';

@@ -11,6 +11,7 @@ import CssBaseline from '@material-ui/core/CssBaseline';
 import Typography from '@material-ui/core/Typography';
 import Divider from '@material-ui/core/Divider';
 import IconButton from '@material-ui/core/IconButton';
+import Button from '@material-ui/core/Button';
 import MenuIcon from '@material-ui/icons/Menu';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import ChevronRightIcon from '@material-ui/icons/ChevronRight';
@@ -20,6 +21,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import StrikethroughSIcon from '@material-ui/icons/StrikethroughS';
 import FindReplaceIcon from '@material-ui/icons/FindReplace';
 import HorizontalSplitIcon from '@material-ui/icons/HorizontalSplit';
+import CloudUploadIcon from '@material-ui/icons/CloudUpload';
 import LinearScaleIcon from '@material-ui/icons/LinearScale';
 import RemoveCircleIcon from '@material-ui/icons/RemoveCircle';
 import DeleteIcon from '@material-ui/icons/Delete';
@@ -107,7 +109,7 @@ const MiniDrawer = (props) => {
   const [selectedCols, setSelectedCols] = React.useState([]);
   const [existingDialogData, setExistingDialogData] = React.useState(null);
   const [previewData, setPreviewData] = React.useState([]);
-  const { csvData, csvName, importFileFromDB, appliedRules, fileId, deleteRule, applyMultipleRules, getRule } = props;
+  const { csvData, csvName, importFileFromDB, appliedRules, fileId, deleteRule, applyMultipleRules, getRule, uploadFile, updateFile } = props;
   const [rules, setRules] = React.useState(appliedRules);
 
   function renderDialogByAction() {
@@ -178,6 +180,12 @@ const MiniDrawer = (props) => {
     setAction(action);
   }
 
+  function handleCapture({ target }) {
+   
+    uploadFile(target.files[0]);
+
+  }
+
   return (
     <div className={classes.root}>
       {renderDialogByAction()}
@@ -235,6 +243,20 @@ const MiniDrawer = (props) => {
               </ListItem>
             </Tooltip>
           ), this)}
+          <Tooltip key={5} title={"Upload"} placement="right">
+              <ListItem button key={5}>
+                <ListItemIcon>{<CloudUploadIcon />}</ListItemIcon>
+                <ListItemText primary={"Upload"} />
+                <input
+                    accept=".csv"
+                    className={classes.input}
+                    id="csv-upload-button"
+                    onChange={handleCapture}
+                    type="file"
+                    style={{opacity: 0, cursor: "pointer"}}
+                />
+              </ListItem>
+          </Tooltip>
         </List>
         <Divider />
         <List>
@@ -253,7 +275,7 @@ const MiniDrawer = (props) => {
       </Drawer>
       <main className={classes.content}>
         <div className={classes.toolbar} />
-        <EnhancedTable csvData={csvData} csvName={csvName} fileId={fileId} importFileFromDB={importFileFromDB} onSelectedCol={handleSelectedCol} />
+        <EnhancedTable csvData={csvData} csvName={csvName} fileId={fileId} updateFile={updateFile} importFileFromDB={importFileFromDB} onSelectedCol={handleSelectedCol} />
       </main>
     </div>
   );

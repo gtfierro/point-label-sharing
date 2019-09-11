@@ -3,7 +3,8 @@ import {
     GET_FILE,
     GET_ALL_FILE_IDS,
     GET_ALL_FILES,
-    CREATE_FILE
+    CREATE_FILE,
+    UPDATE_FILE
 } from './types';
 
 const ROOT_URL = "http://localhost:5000";
@@ -69,14 +70,8 @@ export const getFile = ({ fileId }) => async (dispatch, getState) => {
 };
 
 export const createFile = ({ fileContents }) => async (dispatch, getState) => {
-    const headers = {
-            'Access-Control-Allow-Origin': "*",
-            'Content-Type': 'application/json',
-    };
 
-    const res = await axios.post(`${ROOT_URL}/file`, fileContents, {
-        headers
-    });
+    const res = await axios.post(`${ROOT_URL}/file`, fileContents);
 
     console.log(res.data);
 
@@ -88,4 +83,23 @@ export const createFile = ({ fileContents }) => async (dispatch, getState) => {
     });
 
     return Promise.resolve(getState());
+};
+
+export const updateFile = ({ fileId, contents }) => async (dispatch, getState) => {
+    const res = await axios.put(`${ROOT_URL}/file/${fileId}`, {
+        contents
+    });
+
+    console.log(res.data);
+
+    dispatch({
+        type: UPDATE_FILE,
+        payload: {
+            file: res.data,
+            response: res.statusText
+        }
+    });
+
+    return Promise.resolve(getState());
+
 };
