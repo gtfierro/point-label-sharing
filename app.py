@@ -332,9 +332,9 @@ def home(filename):
    return send_from_directory('frontend/build', filename)
 
 if __name__ == '__main__':
-    # owd = os.getcwd()
-    # os.chdir("frontend")
-    # call(["npm", "run", "build"])
-    # os.chdir(owd)
+    owd = os.getcwd()
+    os.chdir("frontend")
+    call(["npm", "run", "build"])
+    os.chdir(owd)
 
     app.run(host='0.0.0.0',debug=True)
