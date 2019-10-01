@@ -321,19 +321,19 @@ def delete_rule(fileid, ruleid):
         return jsonify({'fileid': original_file_id, 'ruleids': [], 'originalFile': original_file_id})
 
 
-# @app.route('/')
-# def index():
-#     return send_from_directory('frontend/build', 'index.html')
+@app.route('/')
+def index():
+    return send_from_directory('frontend/build', 'index.html')
 
-# @app.route('/<filename>')
-# @crossdomain(origin='*')
-# def home(filename):
-#    return send_from_directory('frontend/build', filename)
+@app.route('/<filename>')
+@crossdomain(origin='*')
+def home(filename):
+   return send_from_directory('frontend/build', filename)
 
 if __name__ == '__main__':
-    # owd = os.getcwd()
-    # os.chdir("frontend")
-    # call(["npm", "run", "build"])
-    # os.chdir(owd)
+    owd = os.getcwd()
+    os.chdir("frontend")
+    call(["npm", "run", "build"])
+    os.chdir(owd)
 
     app.run(host='0.0.0.0',debug=True)
