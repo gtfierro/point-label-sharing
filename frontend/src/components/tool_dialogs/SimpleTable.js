@@ -6,8 +6,6 @@ import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
-import Button from '@material-ui/core/Button';
-import ButtonGroup from '@material-ui/core/ButtonGroup';
 import ToggleButton from '@material-ui/lab/ToggleButton';
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 
@@ -34,13 +32,14 @@ const StyledToggleButtonGroup = withStyles(theme => ({
 }))(ToggleButtonGroup);
 
 export default function SimpleTable(props) {
-  const { previewData, trimRange, findAndReplaceWords, delimeterAndSection, onSectionClicked, wordToFind } = props;
-  const [formats, setFormats] = React.useState(() => ['italic']);
+  const { previewData, trimRange, findAndReplaceWords, delimeterAndSections, onSectionsClicked, wordToFind } = props;
+  const [sections, setSections] = React.useState(() => []);
 
   const classes = useStyles();
 
-  const handleFormat = (event, newFormats) => {
-    setFormats(newFormats);
+  const handleSectionsClicked = (event, newSections) => {
+    setSections(newSections);
+    onSectionsClicked(newSections);
   };
   
   const columnNames = previewData[0];
@@ -59,11 +58,11 @@ export default function SimpleTable(props) {
           return value.replace(re, findAndReplaceWords[1]);
       });
     });
-  } else if (delimeterAndSection) {
+  } else if (delimeterAndSections) {
     rows = previewData.slice(1, 2).map(row => {
       return row.map(value => {
-        if (delimeterAndSection[0]) {
-          return value.split(delimeterAndSection[0]).join(" | ");
+        if (delimeterAndSections[0]) {
+          return value.split(delimeterAndSections[0]).join(" | ");
         } else {
           return value;
         }
@@ -83,10 +82,6 @@ export default function SimpleTable(props) {
   function escapeRegExp(str) {
     return str.replace(/([.*+?^=!:${}()|[\]/\\])/g, "\\$1");
   }
-
-  function handleSectionClick(e, sectionIdx) {
-    onSectionClicked(sectionIdx);
-  }
   
   return (
     <Paper className={classes.root}>
@@ -103,17 +98,17 @@ export default function SimpleTable(props) {
                 return (
                 <TableRow key={index}>
                     {row.map((value,colIdx) => {
-                      if (delimeterAndSection && delimeterAndSection[0]) {
+                      if (delimeterAndSections && delimeterAndSections[0]) {
                         return (
                           <TableCell key={colIdx} component="th" scope="row">
       
                             <StyledToggleButtonGroup
                             size="small"
-                            value={formats}
-                            onChange={handleFormat}
-                            arial-label="text formatting">
+                            value={sections}
+                            onChange={handleSectionsClicked}
+                            arial-label="split text">
                               {value.split(" | ").map((sectionValue, sectionIdx) => {
-                                return <ToggleButton value={sectionValue} onClick={e => handleSectionClick(e, sectionIdx)} key={sectionIdx}>{sectionValue}</ToggleButton>;
+                                return <ToggleButton value={sectionIdx + 1} key={sectionIdx}>{sectionValue}</ToggleButton>;
                               })}
                             </StyledToggleButtonGroup>
                           </TableCell>);

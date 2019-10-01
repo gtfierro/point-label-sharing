@@ -9,6 +9,7 @@ import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
+import Switch from '@material-ui/core/Switch';
 import SimpleTable from './SimpleTable';
 import { connect } from 'react-redux';
 import * as actions from '../../actions';
@@ -40,15 +41,20 @@ const SplitDialogContent = (props) => {
     const classes = useStyles();
 
     const [delimeter, setDelimeter] = React.useState("");
-    const [section, setSection] = React.useState(0);
+    const [sections, setSections] = React.useState([]);
 
-    console.log(selectedCols);
+    const [keepDelimeter, setKeepDelimeter] = React.useState(false);
+    
+    const handleChange = event => {
+        setKeepDelimeter(event.target.checked);
+    };
+
     function handleApplyRule(e) {
         createRule({
             templateId: "split",
             data: {
                 'cols': selectedCols,
-                'args': [delimeter, section]
+                'args': [delimeter, keepDelimeter, sections]
             }
         }).then(res => {
             const ruleData = {
@@ -68,8 +74,6 @@ const SplitDialogContent = (props) => {
             });
         });
 
-        console.log(delimeter, section);
-
         handleClose();
 
     }
@@ -78,8 +82,8 @@ const SplitDialogContent = (props) => {
         setDelimeter(e.target.value);
     }
 
-    function handleSectionClicked(sectionIdx) {
-        setSection(sectionIdx + 1);
+    function handleSectionsClicked(sections) {
+        setSections(sections);
     }
    
     return (
@@ -98,8 +102,17 @@ const SplitDialogContent = (props) => {
                     variant="outlined"
                     onChange={handleDelimeterChange}
                 />
+                <DialogContentText color="textPrimary">
+                Keep delimeter
+                </DialogContentText>
+                <Switch
+                    checked={keepDelimeter}
+                    onChange={handleChange}
+                    color="primary"
+                    inputProps={{ 'aria-label': 'primary checkbox' }}
+                />
                 <DialogContentText color="textPrimary" variant="subtitle1">
-                    Chosen Section: {section}
+                    Chosen Sections: {sections.join(", ")}
 
                 </DialogContentText>
                 <DialogContentText color="textPrimary" variant="h6">
@@ -107,7 +120,7 @@ const SplitDialogContent = (props) => {
 
                 </DialogContentText>
                 
-                { selectedCols.length > 0 ? <SimpleTable onSectionClicked={handleSectionClicked} delimeterAndSection={[delimeter, section]} previewData={previewData} /> : "First, choose the columns you would like to split."} 
+                { selectedCols.length > 0 ? <SimpleTable onSectionsClicked={handleSectionsClicked} delimeterAndSections={[delimeter, sections]} previewData={previewData} /> : "First, choose the columns you would like to split."} 
             </DialogContent>
             <DialogActions>
                 <Button onClick={handleClose} color="primary">
