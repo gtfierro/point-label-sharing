@@ -1,0 +1,65 @@
+body {
+    margin:40px auto;
+    max-width: 75%;
+    color:#444;
+    font-weight: 400;
+    font-family: "Lucida Console", Monaco, monospace;
+    font-size:18px;
+}
+
+.separated {
+    padding-left: 40px;
+    padding-right: 40px;
+}
+
+.content {
+    padding: 0 20px;
+    line-height: 24px;
+}
+
+h1,h2,h3 {
+    line-height:1.2;
+    color:#333;
+    text-align: center;
+}
+a {
+    text-decoration: none;
+}
+a:link {
+    color: blue;
+}
+a:visited {
+    color: blue;
+}
+a:active {
+    color: blue;
+}
+a:hover {
+    color: blue;
+    border-bottom:1px dotted blue;
+}
+img {
+    float: left;
+    padding-right: 40px;
+}
+
+p {
+  text-align: justify;
+  text-justify: inter-word;
+}
+
+.footer {
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  text-align: center;
+}
+
+
+div.footer > p{
+  text-align: center;
+}
+
+div.footer > hr {
+  width: 90%;
+}
