@@ -1,5 +1,5 @@
 import React from 'react';
-import { makeStyles } from '@material-ui/core/styles';
+import { makeStyles, withStyles } from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
@@ -8,6 +8,8 @@ import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
 import Button from '@material-ui/core/Button';
 import ButtonGroup from '@material-ui/core/ButtonGroup';
+import ToggleButton from '@material-ui/lab/ToggleButton';
+import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -17,10 +19,29 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
+const StyledToggleButtonGroup = withStyles(theme => ({
+  grouped: {
+    margin: theme.spacing(0.5),
+    border: 'none',
+    padding: theme.spacing(0, 1),
+    '&:not(:first-child)': {
+      borderRadius: theme.shape.borderRadius,
+    },
+    '&:first-child': {
+      borderRadius: theme.shape.borderRadius,
+    },
+  },
+}))(ToggleButtonGroup);
+
 export default function SimpleTable(props) {
   const { previewData, trimRange, findAndReplaceWords, delimeterAndSection, onSectionClicked, wordToFind } = props;
+  const [formats, setFormats] = React.useState(() => ['italic']);
 
   const classes = useStyles();
+
+  const handleFormat = (event, newFormats) => {
+    setFormats(newFormats);
+  };
   
   const columnNames = previewData[0];
   let rows = [];
@@ -85,11 +106,16 @@ export default function SimpleTable(props) {
                       if (delimeterAndSection && delimeterAndSection[0]) {
                         return (
                           <TableCell key={colIdx} component="th" scope="row">
-                            <ButtonGroup variant="contained" size="small" aria-label="small contained button group">
+      
+                            <StyledToggleButtonGroup
+                            size="small"
+                            value={formats}
+                            onChange={handleFormat}
+                            arial-label="text formatting">
                               {value.split(" | ").map((sectionValue, sectionIdx) => {
-                                return <Button onClick={e => handleSectionClick(e, sectionIdx)} key={sectionIdx}>{sectionValue}</Button>;
+                                return <ToggleButton value={sectionValue} onClick={e => handleSectionClick(e, sectionIdx)} key={sectionIdx}>{sectionValue}</ToggleButton>;
                               })}
-                            </ButtonGroup>
+                            </StyledToggleButtonGroup>
                           </TableCell>);
                       } else {
                         return(

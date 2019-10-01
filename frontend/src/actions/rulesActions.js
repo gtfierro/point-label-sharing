@@ -15,8 +15,6 @@ const ROOT_URL = "http://localhost:5000";
 export const getAllRuleIds = () => async (dispatch) => {
     const res = await axios.get(` ${ROOT_URL}/rule`);
 
-    console.log(res.data);
-
     dispatch({
         type: GET_ALL_RULE_IDS,
         payload: {
@@ -28,8 +26,6 @@ export const getAllRuleIds = () => async (dispatch) => {
 
 export const getAllRules = () => async (dispatch) => {
     const res = await axios.get(` ${ROOT_URL}/rule`);
-
-    console.log(res.data);
 
     let rules = [];
 
@@ -54,8 +50,6 @@ export const getAllRules = () => async (dispatch) => {
 
 export const getRulesByFile = ({ fileId }) => async (dispatch, getState) => {
     const res = await axios.get(` ${ROOT_URL}/file/${fileId}`);
-
-    console.log(res.data);
 
     let rules = [];
 
@@ -87,8 +81,6 @@ export const updateRule = ({ templateId, fileId, ruleId, data }) => async (dispa
         ...data, template: templateId, fileId
     });
 
-    console.log(res.data);
-
     let payload = {};
 
     if (res.data) {
@@ -110,8 +102,6 @@ export const updateRule = ({ templateId, fileId, ruleId, data }) => async (dispa
 export const getRule = ({ ruleId }) => async (dispatch, getState) => {
     const res = await axios.get(`${ROOT_URL}/rule/${ruleId}`);
 
-    console.log(res.data);
-
     dispatch({
         type: GET_RULE,
         payload: {
@@ -127,8 +117,6 @@ export const getRule = ({ ruleId }) => async (dispatch, getState) => {
 export const createRule = ({ templateId, data }) => async (dispatch, getState) => {
     const res = await axios.post(`${ROOT_URL}/rule/${templateId}`, data);
 
-    console.log(res.data);
-
     dispatch({
         type: CREATE_RULE,
         payload: {
@@ -141,8 +129,6 @@ export const createRule = ({ templateId, data }) => async (dispatch, getState) =
 
 export const applyRule = ({ fileId, ruleId }) => async (dispatch, getState) => {
     const res = await axios.post(`${ROOT_URL}/apply/${fileId}/${ruleId}`);
-
-    console.log(res.data);
 
     dispatch({
         type: APPLY_RULE,
@@ -184,8 +170,6 @@ export const applyMultipleRules = ({ fileId, ruleIds }) => async (dispatch, getS
 
 export const deleteRule = ({ fileId, ruleId }) => async (dispatch, getState) => {
     const res = await axios.delete(`${ROOT_URL}/delete/${fileId}/${ruleId}`);
-
-    console.log(res.data);
 
     let payload = {};
 

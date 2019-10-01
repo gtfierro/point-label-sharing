@@ -4,8 +4,7 @@ import { connect } from 'react-redux';
 import * as actions from '../actions';
 import Papa from 'papaparse';
 import {
-    convertCSVTo2DArray,
-    importAll
+    convertCSVTo2DArray
 } from '../helper';
 //const datasets = importAll(require.context('../datasets/davis'));
 

@@ -23,7 +23,7 @@ import CheckCircleIcon from '@material-ui/icons/CheckCircle';
 import Button from '@material-ui/core/Button';
 import { CSVLink } from "react-csv";
 import SimpleSelect from './SimpleSelect';
-import { getSorting, stableSort, convertCSVTo2DArray } from '../helper.js';
+import { getSorting, stableSort, removeMultipleIndices } from '../helper.js';
 
 function EnhancedTableHead(props) {
   const { classes, onSelectAllClick, order, orderBy, numSelected, rowCount, onRequestSort, csvData, onColSelected, selectedCols } = props;
@@ -71,13 +71,14 @@ function EnhancedTableHead(props) {
                 </span>
               ) : null}
             </TableSortLabel>
-            <TableSortLabel
-              active={true}
-              direction='desc'
-              IconComponent={selectedCols[index] ? CheckCircleIcon : CheckCircleOutlineIcon}
-              onClick={event => onColSelected(index)}
-            >
-            </TableSortLabel>
+            { csvData.length > 1 ?
+              <TableSortLabel
+                  active={true}
+                  direction='desc'
+                  IconComponent={selectedCols[index] ? CheckCircleIcon : CheckCircleOutlineIcon}
+                  onClick={event => onColSelected(index)}>
+                  </TableSortLabel> : ""
+            }
           </TableCell>)
         })}
       </TableRow>
@@ -124,7 +125,7 @@ const useToolbarStyles = makeStyles(theme => ({
 const EnhancedTableToolbar = props => {
   const classes = useToolbarStyles();
 
-  const { numSelected, rows, importFileFromDB } = props;
+  const { numSelected, rows, handleDeleteClick, importFileFromDB } = props;
 
   return (
     <Toolbar
@@ -147,7 +148,7 @@ const EnhancedTableToolbar = props => {
       <div className={classes.actions}>
         {numSelected > 0 ? (
           <Tooltip title="Delete">
-            <IconButton aria-label="delete">
+            <IconButton onClick={handleDeleteClick} aria-label="delete">
               <DeleteIcon />
             </IconButton>
           </Tooltip>
@@ -230,9 +231,7 @@ const EnhancedTable  = (props) => {
     setSelected([]);
   }
 
-  function handleClick(event, selectedIndex) {
-
-    console.log(selectedIndex);
+  function handleCheckboxClick(event, selectedIndex) {
 
     let tempSelected = [...selected];
     const index = tempSelected.indexOf(selectedIndex);
@@ -243,6 +242,20 @@ const EnhancedTable  = (props) => {
       tempSelected.splice(index, 1);
       setSelected(tempSelected);
     }
+  }
+
+  async function handleDeleteClick(event) {
+
+    rows = removeMultipleIndices(rows, selected);
+
+    updateFile({
+      fileId,
+      contents: [csvData[0], ...rows]
+    }).then(res => {
+        importFileFromDB(res.files.file.fileid)
+        setSelected([]);
+    });
+    
   }
 
   function handleChangePage(event, newPage) {
@@ -268,25 +281,12 @@ const EnhancedTable  = (props) => {
 
   const emptyRows = rowsPerPage - Math.min(rowsPerPage, rows.length - page * rowsPerPage);
   
-  let sortedRows = stableSort(rows, getSorting(order, orderBy));
-
-  rows = sortedRows
-
-  //if (rows.length > 0 && fileId) {
-    // console.log(rows);
-    // updateFile({
-    //   fileId,
-    //   contents: [csvData[0], ...rows]
-    // }).then(res => {
-    //   console.log(res.files.file.fileid)
-    //   importFileFromDB(res.files.file.fileid)
-    // });
-  //}
+  rows = stableSort(rows, getSorting(order, orderBy));
 
   return (
     <div className={classes.root}>
       <Paper className={classes.paper}>
-        <EnhancedTableToolbar csvName={csvName} rows={rows} fileId={fileId} importFileFromDB={importFileFromDB} numSelected={selected.length} />
+        <EnhancedTableToolbar csvName={csvName} handleDeleteClick={handleDeleteClick} rows={rows} fileId={fileId} importFileFromDB={importFileFromDB} numSelected={selected.length} />
         <div className={classes.tableWrapper}>
           <Table
             className={classes.table}
@@ -314,7 +314,7 @@ const EnhancedTable  = (props) => {
                   return (
                     <TableRow
                       hover
-                      onClick={event => handleClick(event, index)}
+                      onClick={event => handleCheckboxClick(event, index)}
                       role="checkbox"
                       aria-checked={isItemSelected}
                       tabIndex={-1}
@@ -364,7 +364,7 @@ const EnhancedTable  = (props) => {
       <FormControlLabel
         control={<Switch checked={dense} onChange={handleChangeDense} />}
         label="Dense padding"
-      />
+        />
     </div>
   );
 }

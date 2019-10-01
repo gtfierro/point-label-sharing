@@ -12,8 +12,6 @@ const ROOT_URL = "http://localhost:5000";
 export const getAllFileIds = () => async (dispatch, getState) => {
     const res = await axios.get(` ${ROOT_URL}/file`);
 
-    console.log(res.data);
-
     dispatch({
         type: GET_ALL_FILE_IDS,
         payload: {
@@ -28,8 +26,6 @@ export const getAllFileIds = () => async (dispatch, getState) => {
 export const getAllFiles = ({ appliedRules }) => async (dispatch, getState) => {
     const res = await axios.get(` ${ROOT_URL}/file?appliedRules=${appliedRules}`);
 
-    console.log(res.data);
-
     let files = {};
 
     if (res.data) {
@@ -39,8 +35,6 @@ export const getAllFiles = ({ appliedRules }) => async (dispatch, getState) => {
             files[id] = file.data;
         }
     }
-
-    console.log(files);
 
     dispatch({
         type: GET_ALL_FILES,
@@ -55,8 +49,6 @@ export const getAllFiles = ({ appliedRules }) => async (dispatch, getState) => {
 
 export const getFile = ({ fileId }) => async (dispatch, getState) => {
     const res = await axios.get(`${ROOT_URL}/file/${fileId}`);
-
-    console.log(res.data);
 
     dispatch({
         type: GET_FILE,
@@ -73,8 +65,6 @@ export const createFile = ({ fileContents }) => async (dispatch, getState) => {
 
     const res = await axios.post(`${ROOT_URL}/file`, fileContents);
 
-    console.log(res.data);
-
     dispatch({
         type: CREATE_FILE,
         payload: {
@@ -89,8 +79,6 @@ export const updateFile = ({ fileId, contents }) => async (dispatch, getState) =
     const res = await axios.put(`${ROOT_URL}/file/${fileId}`, {
         contents
     });
-
-    console.log(res.data);
 
     dispatch({
         type: UPDATE_FILE,

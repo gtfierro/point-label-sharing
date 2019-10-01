@@ -42,6 +42,10 @@ const sliceData = (data, rows, cols) => {
     return result;
 };
 
+const removeMultipleIndices = (rows, indices) => {
+    return rows.filter((value, index) => !indices.includes(index));
+};
+
 const desc = (a, b, orderBy) => {
     if (b[orderBy] < a[orderBy]) {
         return -1;
@@ -70,6 +74,7 @@ export {
     convertCSVTo2DArray,
     importAll,
     sliceData,
+    removeMultipleIndices,
     desc,
     stableSort,
     getSorting
