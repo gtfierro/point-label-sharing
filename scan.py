@@ -11,9 +11,6 @@ def main():
 @click.option("--dest", default="scraped", help="destination of scraped points")
 def scan(ip, dest):
     import BAC0
-    from BAC0 import lite
-    l = lite()
-    l.discover()
     c = BAC0.connect(ip=ip)
 
     for dev in c.devices:
