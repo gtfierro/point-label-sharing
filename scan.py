@@ -12,6 +12,7 @@ def main():
 def scan(ip, dest):
     import BAC0
     c = BAC0.connect(ip=ip)
+    c.discover()
 
     for dev in c.devices:
         logging.info(f"Scanning BACnet device {dev}")
