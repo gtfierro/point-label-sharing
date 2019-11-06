@@ -13,9 +13,9 @@ def scan(dest):
     from BAC0 import lite
     l = lite()
     l.discover()
-    l.connect()
+    c = BAC0.connect()
 
-    for dev in l.devices:
+    for dev in c.devices:
         logging.info(f"Scanning BACnet device {dev}")
         device = BAC0.device(dev[2], dev[3], l, history_size=1)
         for point in device.points:
