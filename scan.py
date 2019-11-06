@@ -7,13 +7,14 @@ def main():
     pass
 
 @main.command(help="Scan for BACnet devices on your network")
+@click.option("--ip", help="source IP to use (interface)")
 @click.option("--dest", default="scraped", help="destination of scraped points")
-def scan(dest):
+def scan(ip, dest):
     import BAC0
     from BAC0 import lite
     l = lite()
     l.discover()
-    c = BAC0.connect()
+    c = BAC0.connect(ip=ip)
 
     for dev in c.devices:
         logging.info(f"Scanning BACnet device {dev}")
