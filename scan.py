@@ -13,6 +13,7 @@ def scan(dest):
     from BAC0 import lite
     l = lite()
     l.discover()
+    l.connect()
 
     for dev in l.devices:
         logging.info(f"Scanning BACnet device {dev}")
