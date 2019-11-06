@@ -2,7 +2,6 @@ all: install_dependencies
 
 install_dependencies:
 	pip install -r requirements.txt && \
-	cd frontend && npm install && \
-	cd .. && python app.py
+	cd frontend && npm install && npm run build
 
 
