@@ -15,7 +15,7 @@ def scan(ip, dest):
 
     for dev in c.devices:
         logging.info(f"Scanning BACnet device {dev}")
-        device = BAC0.device(dev[2], dev[3], l, history_size=1)
+        device = BAC0.device(dev[2], dev[3], c, history_size=1)
         for point in device.points:
             print(point)
 
