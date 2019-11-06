@@ -1,4 +1,5 @@
 import click
+import time
 import re
 import logging
 
@@ -12,6 +13,7 @@ def main():
 def scan(ip, dest):
     import BAC0
     c = BAC0.connect(ip=ip)
+    time.sleep(4)
     c.discover()
 
     for dev in c.devices:
