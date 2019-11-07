@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "pointscan"
+version = "0.1.0"
+description = "Library for scanning BACnet points"
+authors = ["Gabe Fierro <gtfierro@cs.berkeley.edu>"]
+license = "bsd-3-clause"
+
+[tool.poetry.dependencies]
+python = "^3.6"
+Flask = "^1.1"
+requests = "^2.22"
+click = "^7.0"
+BAC0 = "^19.9"
+pandas = "^0.25.3"
+
+[tool.poetry.dev-dependencies]
+
+[tool.poetry.scripts]
+pointscan = 'pointscan:scan.main'
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"

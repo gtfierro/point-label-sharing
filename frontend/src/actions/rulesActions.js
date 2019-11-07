@@ -10,7 +10,7 @@ import {
     UPDATE_RULE
 } from './types';
 
-const ROOT_URL = "http://localhost:5000";
+const ROOT_URL = "";
 
 export const getAllRuleIds = () => async (dispatch) => {
     const res = await axios.get(` ${ROOT_URL}/rule`);

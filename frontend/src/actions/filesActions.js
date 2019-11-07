@@ -7,7 +7,7 @@ import {
     UPDATE_FILE
 } from './types';
 
-const ROOT_URL = "http://localhost:5000";
+const ROOT_URL = "";
 
 export const getAllFileIds = () => async (dispatch, getState) => {
     const res = await axios.get(` ${ROOT_URL}/file`);

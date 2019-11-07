@@ -337,4 +337,4 @@ if __name__ == '__main__':
     call(["npm", "run", "build"])
     os.chdir(owd)
 
-    app.run(host='0.0.0.0',debug=True)
+    app.run(host='0.0.0.0',port=5000,debug=True)
