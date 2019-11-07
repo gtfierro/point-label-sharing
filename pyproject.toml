@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pointscan"
-version = "0.1.0-a11"
+version = "0.1.0-a14"
 description = "Library for scanning BACnet points"
 authors = ["Gabe Fierro <gtfierro@cs.berkeley.edu>"]
 license = "bsd-3-clause"
