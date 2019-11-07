@@ -43,7 +43,7 @@ def scan(ip, dest):
 @main.command(help="Run webserver to clean/publish datasets")
 @click.option("--port", default=5000, help="webserver port")
 def web(port):
-    from pointscan.app import app
+    from app import app
     app.run(host='0.0.0.0', port=port, debug=True)
 
 if __name__ == '__main__':
