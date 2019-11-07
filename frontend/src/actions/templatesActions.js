@@ -6,7 +6,7 @@ import {
     GET_ALL_TEMPLATES
 } from './types';
 
-const ROOT_URL = "http://localhost:5000";
+const ROOT_URL = "";
 
 export const getAllTemplates = () => async (dispatch) => {
     const res = await axios.get(` ${ROOT_URL}/template`);
