@@ -322,6 +322,7 @@ def delete_rule(fileid, ruleid):
 
 
 @app.route('/')
+@crossdomain(origin='*')
 def index():
     return send_from_directory('frontend/build', 'index.html')
 
