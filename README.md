@@ -18,7 +18,7 @@ To scan your network for BACnet devices and dump the found points, install the `
 
 ```bash
 $ pip install pointscan
-$ scan
+$ pointscan scan
 ```
 
 ### Dataset Cleaning
