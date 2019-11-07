@@ -1,28 +1,37 @@
-## Dataset: An Open Dataset and Collection Tool for BMS Point Labels
+# Dataset: An Open Dataset and Collection Tool for BMS Point Labels
 
 ## Abstract
 
-Semantic metadata standards for buildings such as Brick and Project
-Haystack show promise in enabling wide-scale deployment of
-energy-efficiency measures and advanced building management
-technologies. However, techniques for converting existing diverse
-and idiosyncratic forms of building metadata to these standard
-forms is an area of active research. To encourage and facilitate
-research into the development and evaluation of such techniques,
-we are releasing an open dataset of metadata pulled from real building management systems, containing attributes for 103,064 points
-over 92 buildings. In addition, we are releasing an open-source tool
-for scraping and cleaning metadata from building management
-systems (BMS) for contribution to the dataset.
+Semantic metadata standards for buildings such as Brick and Project Haystack show promise in enabling wide-scale deployment of energy-efficiency measures and advanced building management technologies. However, techniques for converting existing diverse and idiosyncratic forms of building metadata to these standard forms is an area of active research. To encourage and facilitate research into the development and evaluation of such techniques, we are releasing an open dataset of metadata pulled from real building management systems, containing attributes for 103,064 points over 92 buildings. In addition, we are releasing an open-source tool for scraping and cleaning metadata from building management systems (BMS) for contribution to the dataset.
 
 ## How it Works
 
-We are releasing a tool to substantially reduce the effort in extracting point labels and related metadata
-from BMS and preparing this data for public release. The tool begins by scanning a network for BMS endpoints which it can connect to; the tool then pulls all available points and metadata from the
-BMS. The tool then organizes this compiled data into a CSV format and loads it into a web interface which is presented to the user. The user, such as a building manager, can then visualize, clean and
-prepare the point labels for public release. After cleaning and filtering the data, users download the finished dataset and upload it to data.mortardata.org, where it will be reviewed and ultimately integrated into the released dataset. As the dataset expands over time, it will contain a higher number and a
-more diverse population of building metadata, giving researchers a rich body of data from which to develop metadata normalization methods.
+We are releasing a tool to substantially reduce the effort in extracting point labels and related metadata from BMS and preparing this data for public release. The tool begins by scanning a network for BMS endpoints which it can connect to; the tool then pulls all available points and metadata from the BMS. The tool then organizes this compiled data into a CSV format and loads it into a web interface which is presented to the user. The user, such as a building manager, can then visualize, clean and prepare the point labels for public release. After cleaning and filtering the data, users download the finished dataset and upload it to data.mortardata.org, where it will be reviewed and ultimately integrated into the released dataset. As the dataset expands over time, it will contain a higher number and a more diverse population of building metadata, giving researchers a rich body of data from which to develop metadata normalization methods.
 
-## Setup
+## How to Use
+
+### BACnet scanning
+
+We use the excellent [BAC0](https://github.com/ChristianTremblay/BAC0) and [BACpypes](https://github.com/JoelBender/bacpypes) libraries to scan a network for existing BACnet devices.
+
+To scan your network for BACnet devices and dump the found points, install the `pointscan` library and run the `scan` tool:
+
+```bash
+$ pip install pointscan
+$ scan
+```
+
+### Dataset Cleaning
+
+We have also produced a web-based tool for cleaning the point labels found with the scan tool. Due to web dependencies, this can be a little complex to set up (see the "Development Setup" section below) but you should be able to get this working through Docker:
+
+```bash
+$ docker run -p 8000:8000 --name pointscan-web mortar/pointscan:latest
+```
+
+and then access the web interface at [http://localhost:8000](http://localhost:8000).
+
+## Development Setup
 
 Any version > Python v3.6 is recommended. Run the **Makefile** to install necessary dependencies. 
 
