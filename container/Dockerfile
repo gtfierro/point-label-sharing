@@ -5,8 +5,9 @@ COPY scan.sh /usr/bin/scan
 RUN pip install --requirement /opt/requirements.txt
 RUN ln -s /opt/frontend/build /opt/static
 
-WORKDIR /opt
+WORKDIR /opt/pointscan
 
 EXPOSE 47808/udp
+EXPOSE 5000
 
 CMD ["python", "scan.py", "web"]
