@@ -41,7 +41,7 @@ def scan(ip, dest):
     df.to_csv(Path(dest) / Path(devname), index=False)
 
 @main.command(help="Run webserver to clean/publish datasets")
-@click.option("--port", default=8000, help="webserver port")
+@click.option("--port", default=5000, help="webserver port")
 def web(port):
     from pointscan.app import app
     app.run(host='0.0.0.0',port=port,debug=True)
