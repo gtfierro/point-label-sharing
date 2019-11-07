@@ -10,4 +10,4 @@ WORKDIR /opt
 EXPOSE 47808/udp
 EXPOSE 5000
 
-CMD ["python", "scan.py", "web"]
+CMD ["python", "scan.py", "web", "--port", "5000"]
