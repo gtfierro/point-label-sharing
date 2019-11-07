@@ -21,15 +21,17 @@ $ pip install pointscan
 $ pointscan scan
 ```
 
+This will dump a `csv` file in your current directory
+
 ### Dataset Cleaning
 
 We have also produced a web-based tool for cleaning the point labels found with the scan tool. Due to web dependencies, this can be a little complex to set up (see the "Development Setup" section below) but you should be able to get this working through Docker:
 
 ```bash
-$ docker run -p 8000:8000 --name pointscan-web mortar/pointscan:latest
+$ docker run -p 5000:5000 --name pointscan-web mortar/pointscan:latest
 ```
 
-and then access the web interface at [http://localhost:8000](http://localhost:8000).
+and then access the web interface at [http://localhost:5000](http://localhost:5000).
 
 ## Development Setup
 
