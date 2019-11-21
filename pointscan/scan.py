@@ -1,13 +1,13 @@
 import click
-import time
-import re
 import logging
 import pandas as pd
 from pathlib import Path
 
+
 @click.group()
 def main():
     pass
+
 
 @main.command(help="Scan for BACnet devices on your network")
 @click.option("--ip", help="source IP to use (interface)")
@@ -29,7 +29,8 @@ def scan(ip, dest):
                 d = {
                     'name': getattr(point.properties, 'name', None),
                     'units': getattr(point.properties, 'units', None),
-                    'description': getattr(point.properties, 'description', None),
+                    'description': getattr(point.properties,
+                                           'description', None),
                 }
                 points.append(d)
             except Exception as e:
@@ -38,13 +39,15 @@ def scan(ip, dest):
 
     c.disconnect()
     df = pd.DataFrame.from_records(points)
-    df.to_csv(Path(dest) / Path(devname), index=False)
+    df.to_csv(Path(dest) / Path(devname.replace(' ', '_')), index=False)
+
 
 @main.command(help="Run webserver to clean/publish datasets")
 @click.option("--port", default=5000, help="webserver port")
 def web(port):
     from pointscan.app import app
     app.run(host='0.0.0.0', port=port, debug=True)
+
 
 if __name__ == '__main__':
     main()
